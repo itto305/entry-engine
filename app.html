@@ -1077,11 +1077,11 @@
     <div class="field-row">
       <div class="field">
         <label>Total Portfolio Value ($)</label>
-        <input type="number" id="portfolioSize" value="50000" min="100" step="100" oninput="updateStep2()">
+        <input type="number" id="portfolioSize" placeholder="e.g. 50000" min="100" step="100" oninput="updateStep2()">
       </div>
       <div class="field">
         <label>Planned Position Size ($)</label>
-        <input type="number" id="positionAmount" value="5000" min="1" step="100" oninput="updateStep2()">
+        <input type="number" id="positionAmount" placeholder="e.g. 5000" min="1" step="100" oninput="updateStep2()">
       </div>
     </div>
 
@@ -1718,8 +1718,8 @@ function updateStep1() {
 
 // ─── Step 2 Logic ───────────────────────────────────────────────────
 function updateStep2() {
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
-  const pos = parseFloat(document.getElementById('positionAmount').value) || 5000;
+  const port = parseFloat(document.getElementById('portfolioSize').value) || 0;
+  const pos = parseFloat(document.getElementById('positionAmount').value) || 0;
   const dd = parseInt(document.getElementById('drawdown').value) || 20;
   const settings = loadSettings();
 
@@ -1811,7 +1811,7 @@ function updateStep4() {
 
 // ─── Step 5 Logic ───────────────────────────────────────────────────
 function updateStep5() {
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
+  const port = parseFloat(document.getElementById('portfolioSize').value) || 0;
   const edge = parseInt(document.getElementById('edgeScore').value) || 3;
   const win = parseInt(document.getElementById('winRate').value) || 55;
   const method = document.getElementById('sizingMethod').value;
@@ -1866,8 +1866,8 @@ function showVerdict() {
   const target = parseFloat(document.getElementById('targetPrice').value) || 130;
   const stop = parseFloat(document.getElementById('stopLoss').value) || 90;
   const timeframe = document.getElementById('timeframe').value;
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
-  const posAmt = parseFloat(document.getElementById('positionAmount').value) || 5000;
+  const port = parseFloat(document.getElementById('portfolioSize').value) || 0;
+  const posAmt = parseFloat(document.getElementById('positionAmount').value) || 0;
   const dd = parseInt(document.getElementById('drawdown').value) || 20;
   const edgeScore = parseInt(document.getElementById('edgeScore').value) || 3;
   const numPos = parseInt(document.getElementById('numPositions').value) || 8;
