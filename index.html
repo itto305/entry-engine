@@ -1245,7 +1245,7 @@
       <div class="ai-box">
         <div class="ai-header">
           <div class="ai-dot" id="aiDot"></div>
-          <div class="ai-label">Claude AI Analysis</div>
+          <div class="ai-label">Market Analysis</div>
           <button id="cancelAIBtn" class="cancel-btn hidden" onclick="cancelAI()">✕ STOP</button>
         </div>
         <div class="ai-text" id="aiText"><span class="spinner"></span>Analyzing trade parameters...</div>
@@ -1909,79 +1909,102 @@ function showVerdict() {
   // Save to history
   saveTradeToHistory({ id: Date.now(), date: new Date().toLocaleDateString(), asset, verdict, passCount, rr, portRisk, edgeScore, divScore: divScore, posAmt, port, timeframe, passes: [rrPass, ltPass, edgePass, divPass, psPass] });
 
-  callAI(asset, { rr, gain, loss, rrPass, portRisk, ltPass, edgeScore, edgePass, selectedEdgeTypes, divScore, divPass, corr, numPos, recSize, psPass, posAmt, port, dd, timeframe, winRate, passCount, verdict });
+  generateMarketAnalysis(asset, { rr, gain, loss, rrPass, portRisk, ltPass, edgeScore, edgePass, selectedEdgeTypes, divScore, divPass, corr, numPos, recSize, psPass, posAmt, port, dd, timeframe, winRate, passCount, verdict });
 }
 
-// ─── AI Call ──────────────────────────────────────────────────────────
-async function callAI(asset, d) {
+// ─── Market Analysis (local, no API required) ─────────────────────────
+function generateMarketAnalysis(asset, d) {
   aiCancelled = false;
   document.getElementById('cancelAIBtn').classList.remove('hidden');
 
-  const prompt = `You are a sharp, experienced portfolio manager and trading coach. Analyze this trade using the Asset Selection Framework.
+  const s = loadSettings();
+  const sentences = [];
 
-ASSET: ${asset}
-TIMEFRAME: ${d.timeframe}
-PORTFOLIO SIZE: $${d.port.toLocaleString()}
-POSITION AMOUNT: $${d.posAmt.toLocaleString()} (${(d.posAmt/d.port*100).toFixed(1)}% of portfolio)
-MAX DRAWDOWN TOLERANCE: ${d.dd}%
+  // 1. Opening — verdict summary
+  const verdictPhrases = {
+    ENTER:  `${asset} clears all 5 criteria and is set up for entry on the ${d.timeframe} timeframe.`,
+    WAIT:   `${asset} passes ${d.passCount}/5 criteria — the setup has merit but requires adjustments before committing capital on the ${d.timeframe} timeframe.`,
+    REJECT: `${asset} only passes ${d.passCount}/5 criteria on the ${d.timeframe} timeframe; this trade does not meet the minimum threshold and should be avoided.`
+  };
+  sentences.push(verdictPhrases[d.verdict] || `${asset} scored ${d.passCount}/5 criteria.`);
 
-CRITERIA RESULTS:
-1. Risk/Reward: ${d.rr.toFixed(2)}:1 (expected gain +${d.gain.toFixed(1)}%, max loss -${d.loss.toFixed(1)}%) → ${d.rrPass ? 'PASS' : 'FAIL'}
-2. Loss Tolerance: ${d.portRisk.toFixed(2)}% of portfolio at risk → ${d.ltPass ? 'PASS' : 'FAIL'}
-3. Edge Score: ${d.edgeScore}/5, types: ${d.selectedEdgeTypes.join(', ') || 'none specified'} → ${d.edgePass ? 'PASS' : 'FAIL'}
-4. Diversification: Score ${d.divScore}/5, correlation: ${d.corr}, positions: ${d.numPos} → ${d.divPass ? 'PASS' : 'FAIL'}
-5. Position Sizing: Recommended $${Math.round(d.recSize).toLocaleString()}, actual $${d.posAmt.toLocaleString()} → ${d.psPass ? 'PASS' : 'FAIL'}
-
-VERDICT: ${d.verdict} (${d.passCount}/5 criteria passed)
-
-Write a concise, sharp 5-7 sentence analysis (no headers, no bullet points, flowing prose). Be direct, use numbers, call out the biggest risk and the biggest strength. End with one actionable tip. Sound like a real trader, not a textbook.`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(`API error ${response.status}: ${errData?.error?.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    const text = data.content?.find(b => b.type === 'text')?.text || 'Analysis unavailable.';
-
-    const el = document.getElementById('aiText');
-    el.innerHTML = '';
-    let i = 0;
-    const cursor = document.createElement('span');
-    cursor.className = 'ai-cursor';
-
-    function type() {
-      if (aiCancelled) { cursor.remove(); document.getElementById('cancelAIBtn').classList.add('hidden'); return; }
-      if (i < text.length) {
-        el.textContent = text.slice(0, i + 1);
-        el.appendChild(cursor);
-        i++;
-        setTimeout(type, 14);
-      } else {
-        cursor.remove();
-        document.getElementById('cancelAIBtn').classList.add('hidden');
-      }
-    }
-    type();
-
-  } catch (err) {
-    document.getElementById('aiText').textContent = `Analysis error: ${err.message}`;
-    document.getElementById('cancelAIBtn').classList.add('hidden');
+  // 2. Risk/Reward
+  if (d.rrPass) {
+    sentences.push(`The ${d.rr.toFixed(2)}:1 risk-reward ratio is strong — a potential gain of +${d.gain.toFixed(1)}% against a max loss of -${d.loss.toFixed(1)}% gives you favourable asymmetry.`);
+  } else {
+    sentences.push(`The ${d.rr.toFixed(2)}:1 risk-reward falls short of the ${s.rrMinimum}:1 minimum — you're targeting +${d.gain.toFixed(1)}% while risking -${d.loss.toFixed(1)}%, which doesn't justify the exposure; move your target further out or tighten the stop.`);
   }
+
+  // 3. Loss Tolerance
+  if (d.ltPass) {
+    sentences.push(`Portfolio risk sits at ${d.portRisk.toFixed(2)}%, well within your ${d.dd}% drawdown tolerance — capital preservation is intact on this position.`);
+  } else {
+    sentences.push(`At ${d.portRisk.toFixed(2)}% portfolio risk against a ${d.dd}% drawdown limit, this position is oversized for your risk profile — reduce allocation before entering.`);
+  }
+
+  // 4. Edge Score
+  const edgeStr = d.selectedEdgeTypes.length ? ` (${d.selectedEdgeTypes.join(', ')})` : '';
+  if (d.edgePass) {
+    sentences.push(`Edge score of ${d.edgeScore}/5${edgeStr} confirms enough confluence to support a trade — you have defined reasons to be in this position.`);
+  } else {
+    sentences.push(`Edge score of ${d.edgeScore}/5${edgeStr} is below the ${s.minEdgeScore}/5 threshold — without sufficient confluence the trade is speculative; wait for more confirming signals before pulling the trigger.`);
+  }
+
+  // 5. Diversification
+  if (d.divPass) {
+    sentences.push(`Diversification looks healthy at ${d.divScore}/5 with ${d.numPos} open position${d.numPos !== 1 ? 's' : ''} and ${d.corr} correlation — adding ${asset} won't meaningfully concentrate the book.`);
+  } else {
+    sentences.push(`Diversification score of ${d.divScore}/5 with ${d.numPos} position${d.numPos !== 1 ? 's' : ''} at ${d.corr} correlation raises concentration risk — ${asset} may be too correlated to existing holdings; reassess before adding exposure.`);
+  }
+
+  // 6. Position Sizing
+  const recRounded = Math.round(d.recSize);
+  const diff = d.posAmt - recRounded;
+  const diffPct = recRounded > 0 ? Math.abs(diff / recRounded * 100).toFixed(0) : 0;
+  if (d.psPass) {
+    sentences.push(`Position size of $${d.posAmt.toLocaleString()} aligns with the recommended $${recRounded.toLocaleString()} — disciplined sizing is in place.`);
+  } else if (diff > 0) {
+    sentences.push(`Your allocation of $${d.posAmt.toLocaleString()} is ${diffPct}% above the recommended $${recRounded.toLocaleString()} based on Kelly/half-Kelly sizing — cut it down to stay within your risk model.`);
+  } else {
+    sentences.push(`Your allocation of $${d.posAmt.toLocaleString()} is ${diffPct}% below the recommended $${recRounded.toLocaleString()} — if conviction is high and the other criteria improve, you have room to scale up.`);
+  }
+
+  // 7. Actionable tip
+  const failed = [];
+  if (!d.rrPass) failed.push('improve your risk-reward by widening the target or tightening the stop');
+  if (!d.ltPass) failed.push('reduce position size to stay within drawdown limits');
+  if (!d.edgePass) failed.push('wait for additional confirming signals to raise edge score');
+  if (!d.divPass) failed.push('review portfolio correlation before adding this position');
+  if (!d.psPass && diff > 0) failed.push(`trim allocation to $${recRounded.toLocaleString()} as the model recommends`);
+
+  if (failed.length > 0) {
+    sentences.push(`Priority action: ${failed[0].charAt(0).toUpperCase() + failed[0].slice(1)}.`);
+  } else {
+    sentences.push(`All systems green — execute with discipline, honour your stop, and let the trade play out.`);
+  }
+
+  const text = sentences.join(' ');
+
+  // Typewriter effect
+  const el = document.getElementById('aiText');
+  el.innerHTML = '';
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'ai-cursor';
+
+  function type() {
+    if (aiCancelled) { cursor.remove(); document.getElementById('cancelAIBtn').classList.add('hidden'); return; }
+    if (i < text.length) {
+      el.textContent = text.slice(0, i + 1);
+      el.appendChild(cursor);
+      i++;
+      setTimeout(type, 14);
+    } else {
+      cursor.remove();
+      document.getElementById('cancelAIBtn').classList.add('hidden');
+    }
+  }
+  type();
 }
 
 // ─── Reset ──────────────────────────────────────────────────────────
