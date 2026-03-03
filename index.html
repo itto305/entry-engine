@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Decision Engine</title>
+<title>EntryEngine — Know Before You Enter</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  /* ── Dark mode (default) ── */
   :root {
     --bg: #0a0a0a;
     --surface: #111111;
@@ -15,100 +14,28 @@
     --accent: #c8f542;
     --accent-hover: #d4ff55;
     --accent-faint: rgba(200,245,66,0.08);
-    --accent-glow: rgba(200,245,66,0.2);
-    --accent-muted: rgba(200,245,66,0.5);
+    --accent-glow: rgba(200,245,66,0.22);
     --accent2: #ff4d4d;
     --accent3: #4daaff;
-    --accent3-faint: rgba(77,170,255,0.3);
     --text: #e8e8e8;
-    --muted: #666;
+    --muted: #555;
+    --muted2: #888;
     --pass: #c8f542;
-    --fail: #ff4d4d;
     --wait: #ffb84d;
+    --fail: #ff4d4d;
     --grid-line: rgba(200,245,66,0.03);
-    --input-bg: #0a0a0a;
-    --computed-bg: #0d1a00;
-    --computed-border: rgba(200,245,66,0.15);
-    --ai-bg: #050d1a;
-    --ai-border: rgba(77,170,255,0.2);
-    --ai-text: #8ab4d4;
-    --h1-color: #ffffff;
-    --score-tile-bg: #111111;
-  }
-
-  /* ── Light mode via class ── */
-  html.light :root {
-    --bg: #f5f5f0;
-    --surface: #ffffff;
-    --border: #ddddd8;
-    --border-hover: #aaaaaa;
-    --accent: #5a9e00;
-    --accent-hover: #4d8800;
-    --accent-faint: rgba(90,158,0,0.08);
-    --accent-glow: rgba(90,158,0,0.2);
-    --accent-muted: rgba(90,158,0,0.6);
-    --accent2: #cc2200;
-    --accent3: #1a6fc4;
-    --accent3-faint: rgba(26,111,196,0.2);
-    --text: #1a1a1a;
-    --muted: #888;
-    --pass: #5a9e00;
-    --fail: #cc2200;
-    --wait: #b86000;
-    --grid-line: rgba(90,158,0,0.06);
-    --input-bg: #fafaf7;
-    --computed-bg: #f0f7e6;
-    --computed-border: rgba(90,158,0,0.2);
-    --ai-bg: #eef4fb;
-    --ai-border: rgba(26,111,196,0.2);
-    --ai-text: #2a5a8a;
-    --h1-color: #111111;
-    --score-tile-bg: #f5f5f0;
-  }
-
-  /* ── Light mode via system preference (fallback) ── */
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #f5f5f0;
-      --surface: #ffffff;
-      --border: #ddddd8;
-      --border-hover: #aaaaaa;
-      --accent: #5a9e00;
-      --accent-hover: #4d8800;
-      --accent-faint: rgba(90,158,0,0.08);
-      --accent-glow: rgba(90,158,0,0.2);
-      --accent-muted: rgba(90,158,0,0.6);
-      --accent2: #cc2200;
-      --accent3: #1a6fc4;
-      --accent3-faint: rgba(26,111,196,0.2);
-      --text: #1a1a1a;
-      --muted: #888;
-      --pass: #5a9e00;
-      --fail: #cc2200;
-      --wait: #b86000;
-      --grid-line: rgba(90,158,0,0.06);
-      --input-bg: #fafaf7;
-      --computed-bg: #f0f7e6;
-      --computed-border: rgba(90,158,0,0.2);
-      --ai-bg: #eef4fb;
-      --ai-border: rgba(26,111,196,0.2);
-      --ai-text: #2a5a8a;
-      --h1-color: #111111;
-      --score-tile-bg: #f5f5f0;
-    }
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* Animated grid background */
   body::before {
     content: '';
     position: fixed;
@@ -121,1944 +48,676 @@
     z-index: 0;
   }
 
+  section { position: relative; z-index: 1; }
+
   .container {
-    position: relative;
-    z-index: 1;
-    max-width: 860px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 40px 24px 80px;
+    padding: 0 32px;
   }
 
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 52px;
-    animation: fadeDown 0.7s ease both;
-  }
-
-  .eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    opacity: 0.8;
-  }
-
-  h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(54px, 10vw, 96px);
-    letter-spacing: 0.04em;
-    line-height: 0.9;
-    color: var(--h1-color);
-  }
-
-  h1 span {
-    color: var(--accent);
-    display: block;
-  }
-
-  .subtitle {
-    font-size: 14px;
-    color: var(--muted);
-    margin-top: 16px;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* Step progress */
-  .progress-bar {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 40px;
-    animation: fadeUp 0.7s 0.2s ease both;
-  }
-
-  .prog-step {
-    flex: 1;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    transition: background 0.4s ease;
-    position: relative;
-  }
-
-  .prog-step.active { background: var(--accent); }
-  .prog-step.done { background: var(--accent-faint); }
-
-  /* Card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 36px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s ease both;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
+  /* ── NAV ── */
+  nav {
+    position: fixed;
     top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .card.active-card::before { opacity: 1; }
-
-  .step-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .card h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
+    z-index: 100;
     display: flex;
     align-items: center;
-    gap: 10px;
-  }
-
-  .card h2 .icon { font-size: 26px; }
-
-  .card-desc {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 28px;
-    line-height: 1.6;
-    font-family: 'DM Mono', monospace;
-  }
-
-  /* Form elements */
-  .field-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .field-row.single { grid-template-columns: 1fr; }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  input[type="number"], input[type="text"], select {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 18px;
-    padding: 12px 16px;
-    width: 100%;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent);
-  }
-
-  /* Range slider */
-  .slider-wrap {
-    position: relative;
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    cursor: pointer;
-    margin-top: 8px;
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    box-shadow: 0 0 0 3px var(--accent-glow);
-    transition: box-shadow 0.2s;
-  }
-
-  input[type="range"]::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 0 6px var(--accent-glow);
-  }
-
-  .range-labels {
-    display: flex;
     justify-content: space-between;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 6px;
+    padding: 20px 40px;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
   }
 
-  .range-val {
+  .nav-logo {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 40px;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-
-  /* Computed badges */
-  .computed {
-    background: var(--computed-bg);
-    border: 1px solid var(--computed-border);
-    border-radius: 2px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .computed-item {
-    text-align: center;
-  }
-
-  .computed-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .computed-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.04em;
-  }
-
-  .computed-val.good { color: var(--pass); }
-  .computed-val.bad { color: var(--fail); }
-  .computed-val.neutral { color: var(--accent3); }
-
-  /* Checkboxes for edge type */
-  .chip-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .chip {
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
-    color: var(--muted);
-  }
-
-  .chip:hover { border-color: var(--accent); color: var(--text); }
-  .chip.selected { border-color: var(--accent); background: var(--accent-faint); color: var(--accent); }
-
-  /* Navigation */
-  .nav-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 28px;
-  }
-
-  .btn {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
+    font-size: 26px;
     letter-spacing: 0.1em;
-    padding: 14px 32px;
+    color: var(--text);
+  }
+  .nav-logo span { color: var(--accent); }
+
+  .nav-cta {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    padding: 10px 24px;
+    background: var(--accent);
+    color: #000;
     border: none;
     border-radius: 2px;
     cursor: pointer;
-    transition: all 0.15s;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
   }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
-
-  .btn-primary:hover {
+  .nav-cta:hover {
     background: var(--accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px var(--accent-glow);
+    box-shadow: 0 6px 20px var(--accent-glow);
   }
 
-  .btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 140px 0 80px;
   }
 
-  .btn-ghost:hover { color: var(--text); border-color: var(--border-hover); }
-
-  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
-
-  /* Verdict */
-  .verdict-card {
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 48px 36px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .verdict-glow {
-    position: absolute;
-    inset: 0;
-    opacity: 0.05;
-    pointer-events: none;
-  }
-
-  .verdict-card.pass { border-color: var(--pass); }
-  .verdict-card.pass .verdict-glow { background: radial-gradient(ellipse at 50% 0%, var(--pass), transparent 70%); }
-  .verdict-card.fail { border-color: var(--fail); }
-  .verdict-card.fail .verdict-glow { background: radial-gradient(ellipse at 50% 0%, var(--fail), transparent 70%); }
-  .verdict-card.wait { border-color: var(--wait); }
-  .verdict-card.wait .verdict-glow { background: radial-gradient(ellipse at 50% 0%, var(--wait), transparent 70%); }
-
-  .verdict-icon { font-size: 64px; margin-bottom: 16px; display: block; }
-  .verdict-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 72px;
-    letter-spacing: 0.1em;
-    line-height: 1;
-    margin-bottom: 12px;
-  }
-
-  .verdict-card.pass .verdict-label { color: var(--pass); }
-  .verdict-card.fail .verdict-label { color: var(--fail); }
-  .verdict-card.wait .verdict-label { color: var(--wait); }
-
-  .verdict-sub {
-    font-size: 14px;
-    color: var(--muted);
+  .hero-eyebrow {
     font-family: 'DM Mono', monospace;
-    margin-bottom: 36px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.7;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0.85;
+    animation: fadeDown 0.8s ease both;
   }
 
-  /* Score grid in verdict */
-  .score-grid {
+  .hero-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 12vw, 148px);
+    line-height: 0.88;
+    letter-spacing: 0.03em;
+    color: #fff;
+    animation: fadeDown 0.8s 0.1s ease both;
+    margin-bottom: 8px;
+  }
+  .hero-headline .accent { color: var(--accent); }
+
+  .hero-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--muted2);
+    max-width: 520px;
+    line-height: 1.8;
+    margin: 32px 0 48px;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: fadeDown 0.8s 0.3s ease both;
+  }
+
+  .btn-hero {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    padding: 18px 44px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.15s;
+  }
+  .btn-hero:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px var(--accent-glow);
+  }
+
+  .hero-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .verdict-strip {
+    display: flex;
+    gap: 12px;
+    margin-top: 64px;
+    animation: fadeUp 0.8s 0.5s ease both;
+    flex-wrap: wrap;
+  }
+
+  .v-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    padding: 8px 18px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .v-badge.enter  { border-color: var(--pass);  color: var(--pass);  background: rgba(200,245,66,0.06); }
+  .v-badge.wait   { border-color: var(--wait);  color: var(--wait);  background: rgba(255,184,77,0.06); }
+  .v-badge.reject { border-color: var(--fail);  color: var(--fail);  background: rgba(255,77,77,0.06); }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+    margin-bottom: 100px;
+  }
+
+  .stats-inner {
+    display: flex;
+    justify-content: center;
+    gap: 64px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item { text-align: center; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    letter-spacing: 0.04em;
+    line-height: 0.95;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+
+  .section-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted2);
+    line-height: 1.8;
+    max-width: 480px;
+  }
+
+  /* ── CRITERIA ── */
+  .criteria-section { padding: 0 0 100px; }
+
+  .criteria-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
-    margin: 32px 0;
+    margin-top: 56px;
   }
 
-  .score-tile {
-    background: var(--score-tile-bg);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 16px 8px;
-    text-align: center;
-  }
-
-  .score-tile-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .score-tile-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.03em;
-  }
-
-  .score-tile-val.pass { color: var(--pass); }
-  .score-tile-val.fail { color: var(--fail); }
-  .score-tile-val.warn { color: var(--wait); }
-
-  /* AI Analysis box */
-  .ai-box {
-    background: var(--ai-bg);
-    border: 1px solid var(--ai-border);
-    border-radius: 2px;
-    padding: 24px;
-    margin-top: 28px;
-    text-align: left;
-  }
-
-  .ai-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .ai-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent3);
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .ai-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--accent3);
-    text-transform: uppercase;
-  }
-
-  .ai-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    line-height: 1.8;
-    color: var(--ai-text);
-    white-space: pre-wrap;
-  }
-
-  .ai-cursor {
-    display: inline-block;
-    width: 8px;
-    height: 13px;
-    background: var(--accent3);
-    margin-left: 2px;
-    animation: blink 0.9s step-end infinite;
-    vertical-align: text-bottom;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 14px; height: 14px;
-    border: 2px solid var(--accent3-faint);
-    border-top-color: var(--accent3);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Tooltips */
-  .tip {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent-muted);
-    margin-top: 6px;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .tip::before { content: '→'; flex-shrink: 0; }
-  .asset-input-wrap {
+  .criterion-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 2px;
-    padding: 36px;
-    margin-bottom: 28px;
-    animation: fadeDown 0.6s ease both;
+    padding: 28px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
   }
 
-  .asset-input-wrap h2 {
+  .criterion-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .criterion-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+  .criterion-card:hover::before { opacity: 1; }
+
+  .criterion-num {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    margin-bottom: 6px;
-    letter-spacing: 0.05em;
+    font-size: 48px;
+    color: #1e1e1e;
+    line-height: 1;
+    margin-bottom: 16px;
   }
 
-  .asset-input-wrap p {
-    font-size: 13px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 20px;
-  }
+  .criterion-icon { font-size: 28px; margin-bottom: 12px; display: block; }
 
-  .big-input {
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    color: var(--text);
+  .criterion-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
+    font-size: 20px;
     letter-spacing: 0.06em;
-    padding: 16px 20px;
-    width: 100%;
-    text-transform: uppercase;
-    transition: border-color 0.2s;
-  }
-
-  .big-input:focus { outline: none; border-color: var(--accent); }
-  .big-input::placeholder { color: var(--border); }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .hidden { display: none !important; }
-
-  /* Reset */
-  .btn-reset {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.15em;
-    padding: 10px 20px;
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.15s;
-    display: inline-block;
-    margin: 20px 6px 0;
-  }
-
-  .btn-reset:hover { color: var(--text); border-color: var(--border-hover); }
-
-  /* Market data banner */
-  .market-banner {
-    background: var(--computed-bg);
-    border: 1px solid var(--computed-border);
-    border-radius: 2px;
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .market-banner.loading {
-    opacity: 0.7;
-  }
-
-  .market-ticker {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-  }
-
-  .market-price {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.04em;
     color: var(--text);
+    margin-bottom: 10px;
   }
 
-  .market-change {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 2px;
-  }
-
-  .market-change.up { background: rgba(90,158,0,0.15); color: var(--pass); }
-  .market-change.down { background: rgba(204,34,0,0.12); color: var(--fail); }
-
-  .market-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .live-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--pass);
-    animation: pulse 2s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-
-  .market-stats {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .market-stat {
-    text-align: center;
-  }
-
-  .market-stat-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-
-  .market-stat-val {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .prefill-notice {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    margin-bottom: 14px;
-    opacity: 0.8;
-  }
-
-  /* Asset input section */
-
-  @media (max-width: 600px) {
-    .field-row { grid-template-columns: 1fr; }
-    .score-grid { grid-template-columns: repeat(3, 1fr); }
-    h1 { font-size: 52px; }
-  }
-
-  /* ── Header buttons ── */
-  .icon-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    width: 36px;
-    height: 36px;
-    border-radius: 2px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .icon-btn:hover { border-color: var(--border-hover); color: var(--text); }
-
-  /* ── Settings panel ── */
-  .settings-panel {
-    position: fixed;
-    top: 0; right: 0;
-    width: 320px;
-    height: 100vh;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-  }
-  .settings-panel.hidden { display: none; }
-  .settings-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
-  }
-  .settings-overlay.hidden { display: none; }
-  .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-  .settings-title { font-family: 'Bebas Neue', cursive; font-size: 20px; letter-spacing: 0.1em; color: var(--text); }
-  .settings-body { flex: 1; overflow-y: auto; }
-  .settings-group { margin-bottom: 20px; }
-  .settings-group label { display: block; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .settings-group input { width: 100%; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 14px; border-radius: 2px; box-sizing: border-box; }
-  .settings-group input:focus { outline: none; border-color: var(--accent); }
-  .settings-footer { display: flex; gap: 12px; margin-top: 24px; }
-
-  /* ── Direction toggle ── */
-  .direction-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
-  .direction-btn {
-    flex: 1;
-    padding: 10px;
-    background: var(--input-bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .direction-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-faint); }
-
-  /* ── Warning banner ── */
-  .warn-banner {
-    background: rgba(255,184,77,0.1);
-    border: 1px solid rgba(255,184,77,0.4);
-    border-radius: 2px;
-    padding: 10px 14px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--wait);
-    margin-bottom: 16px;
-  }
-  .warn-banner.hidden { display: none; }
-
-  /* ── Cancel AI button ── */
-  .cancel-btn {
-    background: none;
-    border: 1px solid var(--accent2);
-    color: var(--accent2);
+  .criterion-desc {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 56px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .step-block {
+    background: var(--surface);
+    padding: 40px 32px;
+    position: relative;
+  }
+
+  .step-block:not(:last-child) { border-right: 1px solid var(--border); }
+
+  .step-arrow {
+    position: absolute;
+    top: 50%; right: -14px;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    z-index: 2;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: #181818;
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+
+  .step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .step-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted2);
+    line-height: 1.8;
+  }
+
+  .step-tag {
+    display: inline-block;
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid rgba(200,245,66,0.3);
     padding: 4px 10px;
     border-radius: 2px;
-    cursor: pointer;
-    margin-left: auto;
   }
-  .cancel-btn:hover { background: rgba(255,77,77,0.1); }
-  .cancel-btn.hidden { display: none; }
 
-  /* ── History styles ── */
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+  /* ── VERDICT DEMO ── */
+  .demo-section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
   }
-  .btn-text-sm {
-    background: none;
-    border: none;
-    color: var(--muted);
+
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 56px;
+  }
+
+  .demo-card {
+    border-radius: 2px;
+    padding: 36px 28px;
+    text-align: center;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-card .glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  .demo-card.enter  { border-color: var(--pass); }
+  .demo-card.enter  .glow { background: radial-gradient(ellipse at 50% 0%, var(--pass), transparent 70%); }
+  .demo-card.wait   { border-color: var(--wait); }
+  .demo-card.wait   .glow { background: radial-gradient(ellipse at 50% 0%, var(--wait), transparent 70%); }
+  .demo-card.reject { border-color: var(--fail); }
+  .demo-card.reject .glow { background: radial-gradient(ellipse at 50% 0%, var(--fail), transparent 70%); }
+
+  .demo-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+  .demo-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .demo-card.enter  .demo-label { color: var(--pass); }
+  .demo-card.wait   .demo-label { color: var(--wait); }
+  .demo-card.reject .demo-label { color: var(--fail); }
+
+  .demo-desc {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    cursor: pointer;
-    letter-spacing: 0.05em;
+    color: var(--muted2);
+    line-height: 1.7;
+    margin-top: 8px;
   }
-  .btn-text-sm:hover { color: var(--accent2); }
-  .history-card {
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    background: var(--surface);
-    transition: border-color 0.2s;
-  }
-  .history-card:hover { border-color: var(--border-hover); }
-  .history-card-main { display: flex; justify-content: space-between; align-items: center; }
-  .history-asset { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--text); letter-spacing: 0.05em; }
-  .history-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .history-verdict { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
-  .history-verdict.pass { color: var(--pass); }
-  .history-verdict.wait { color: var(--wait); }
-  .history-verdict.fail { color: var(--fail); }
-  .history-passes { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
-  .history-details {
-    display: flex;
-    gap: 16px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .history-details span { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
 
-  /* ── Print styles ── */
-  @media print {
-    body { background: white !important; color: black !important; }
-    body::before { display: none; }
-    #step0, .progress-bar, #progressWrap, .card, #settingsBtn, #themeToggle, .settings-panel, .settings-overlay, #historySection { display: none !important; }
-    #verdictSection { display: block !important; }
-    .verdict-card { border: 1px solid #ccc !important; background: white !important; }
-    .btn-reset, .ai-header button { display: none !important; }
-    .ai-text { color: #333 !important; }
+  .demo-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    margin-top: 16px;
+    color: var(--muted);
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    border-top: 1px solid var(--border);
+    padding: 120px 0;
+    text-align: center;
+  }
+
+  .cta-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted2);
+    margin-bottom: 48px;
+    line-height: 1.8;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .footer-logo span { color: var(--accent); }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #333;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .criteria-grid { grid-template-columns: repeat(3, 1fr); }
+    .steps-grid { grid-template-columns: 1fr; }
+    .step-block:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+    .step-arrow { display: none; }
+    .demo-grid { grid-template-columns: 1fr; }
+    .stats-inner { gap: 32px; }
+  }
+
+  @media (max-width: 600px) {
+    .criteria-grid { grid-template-columns: repeat(2, 1fr); }
+    nav { padding: 14px 20px; }
+    .hero { padding: 110px 0 60px; }
+    .hero-actions { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- HEADER -->
-  <div class="header" style="display:flex;align-items:center;justify-content:space-between;">
-    <div>
-      <div class="eyebrow">Asset Selection Framework</div>
-      <h1>TRADE<span>DECISION</span>ENGINE</h1>
-      <div class="subtitle">// 5-criteria risk-weighted analysis tool</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
-      <button id="settingsBtn" class="icon-btn" onclick="toggleSettings()" title="Settings">⚙</button>
-    </div>
-  </div>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ENTRY<span>ENGINE</span></div>
+  <a href="app.html" class="nav-cta">OPEN APP →</a>
+</nav>
 
-  <!-- ASSET INPUT (Step 0) -->
-  <div id="step0" class="asset-input-wrap">
-    <h2>What are you evaluating?</h2>
-    <p>Enter the ticker, asset name, or investment you want to analyze</p>
-    <input class="big-input" id="assetName" type="text" placeholder="e.g. NVDA, BTC, SPY..." maxlength="30" onkeydown="if(event.key==='Enter') startAnalysis()">
-    <div style="margin-top:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="startAnalysis()">BEGIN ANALYSIS →</button>
-      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">5 criteria · AI verdict</div>
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">// 5-criteria risk-weighted trade framework</div>
+    <h1 class="hero-headline">
+      KNOW<br>
+      <span class="accent">BEFORE</span><br>
+      YOU ENTER.
+    </h1>
+    <p class="hero-sub">
+      EntryEngine scores every trade across 5 objective criteria — risk/reward, loss tolerance, edge, diversification, and position sizing — and delivers a clear verdict before you risk a dollar.
+    </p>
+    <div class="hero-actions">
+      <a href="app.html" class="btn-hero">ANALYZE A TRADE →</a>
+      <span class="hero-note">// no signup &nbsp;·&nbsp; no cost &nbsp;·&nbsp; real-time data</span>
     </div>
-
-    <div id="historySection" style="margin-top:40px;display:none;">
-      <div class="history-header">
-        <span style="font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:0.1em;color:var(--muted)">TRADE HISTORY</span>
-        <button class="btn-text-sm" onclick="clearHistory()">CLEAR ALL</button>
-      </div>
-      <div id="historyList"></div>
+    <div class="verdict-strip">
+      <div class="v-badge enter">✅ &nbsp;ENTER</div>
+      <div class="v-badge wait">⏳ &nbsp;WAIT</div>
+      <div class="v-badge reject">❌ &nbsp;REJECT</div>
     </div>
   </div>
+</section>
 
-  <!-- STEP PROGRESS (hidden until started) -->
-  <div id="progressWrap" class="hidden">
-    <div class="progress-bar" id="progressBar">
-      <div class="prog-step" id="ps1"></div>
-      <div class="prog-step" id="ps2"></div>
-      <div class="prog-step" id="ps3"></div>
-      <div class="prog-step" id="ps4"></div>
-      <div class="prog-step" id="ps5"></div>
-    </div>
-  </div>
-
-  <!-- STEP 1: Return Target -->
-  <div id="step1" class="card hidden">
-    <div class="step-label">Step 01 / 05</div>
-    <h2><span class="icon">🎯</span> Return Target</h2>
-    <div class="card-desc">Define your minimum acceptable return and your realistic target. The ratio between these determines if this trade is mathematically worth taking.</div>
-
-    <!-- Live market data banner (populated by JS) -->
-    <div id="marketBanner" class="hidden"></div>
-    <div id="prefillNotice" class="prefill-notice hidden">↳ ENTRY PRICE PRE-FILLED FROM LIVE MARKET DATA — ADJUST AS NEEDED</div>
-
-    <!-- Direction toggle -->
-    <div class="direction-toggle">
-      <button class="direction-btn active" data-dir="long" onclick="setDirection('long')">LONG ↑</button>
-      <button class="direction-btn" data-dir="short" onclick="setDirection('short')">SHORT ↓</button>
-    </div>
-
-    <!-- Input validation warning -->
-    <div id="step1Warn" class="warn-banner hidden"></div>
-
-    <div class="field-row">
-      <div class="field">
-        <label>Entry Price ($)</label>
-        <input type="number" id="entryPrice" value="100" min="0.01" step="0.01" oninput="updateStep1()">
+<!-- STATS BAR -->
+<section class="stats-bar reveal">
+  <div class="container">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Scoring Criteria</div>
       </div>
-      <div class="field">
-        <label>Target Price ($)</label>
-        <input type="number" id="targetPrice" value="130" min="0.01" step="0.01" oninput="updateStep1()">
+      <div class="stat-item">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Clear Verdicts</div>
       </div>
-    </div>
-
-    <div class="field-row">
-      <div class="field">
-        <label>Stop-Loss Price ($)</label>
-        <input type="number" id="stopLoss" value="90" min="0.01" step="0.01" oninput="updateStep1()">
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Trades Analyzed</div>
       </div>
-      <div class="field">
-        <label>Timeframe</label>
-        <select id="timeframe">
-          <option value="days">Days (swing)</option>
-          <option value="weeks">Weeks (short-term)</option>
-          <option value="months" selected>Months (medium-term)</option>
-          <option value="years">Years (long-term)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="computed" id="rr-computed">
-      <div class="computed-item">
-        <div class="computed-label">Expected Gain</div>
-        <div class="computed-val good" id="expGain">+30%</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Max Loss</div>
-        <div class="computed-val bad" id="expLoss">-10%</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Risk/Reward</div>
-        <div class="computed-val" id="rr">3.0:1</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Criterion</div>
-        <div class="computed-val" id="rrVerdict">✅ PASS</div>
-      </div>
-    </div>
-    <div class="tip" id="rrTip">Ratio ≥ 2:1 required to proceed.</div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" disabled>← BACK</button>
-      <button class="btn btn-primary" onclick="goStep(2)">NEXT →</button>
-    </div>
-  </div>
-
-  <!-- STEP 2: Loss Tolerance -->
-  <div id="step2" class="card hidden">
-    <div class="step-label">Step 02 / 05</div>
-    <h2><span class="icon">🛡️</span> Loss Tolerance</h2>
-    <div class="card-desc">Your max drawdown limit. Set this BEFORE you enter — never move your stop-loss down. This protects you from turning small losses into catastrophic ones.</div>
-
-    <div class="field-row">
-      <div class="field">
-        <label>Total Portfolio Value ($)</label>
-        <input type="number" id="portfolioSize" value="50000" min="100" step="100" oninput="updateStep2()">
-      </div>
-      <div class="field">
-        <label>Planned Position Size ($)</label>
-        <input type="number" id="positionAmount" value="5000" min="1" step="100" oninput="updateStep2()">
-      </div>
-    </div>
-
-    <div class="field-row single">
-      <div class="field">
-        <label>Max Drawdown Tolerance — <span id="drawdownLabel">20%</span></label>
-        <div class="slider-wrap">
-          <div class="range-val" id="drawdownDisplay">20%</div>
-          <input type="range" id="drawdown" min="5" max="80" value="20" step="5" oninput="updateStep2()">
-          <div class="range-labels"><span>5% (conservative)</span><span>80% (moonshot)</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="computed" id="lt-computed">
-      <div class="computed-item">
-        <div class="computed-label">Portfolio %</div>
-        <div class="computed-val neutral" id="portPct">10%</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Max $ Loss</div>
-        <div class="computed-val bad" id="maxDollarLoss">$1,000</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">% of Portfolio at Risk</div>
-        <div class="computed-val" id="portRisk">2%</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Risk Profile</div>
-        <div class="computed-val" id="riskProfile">MODERATE</div>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goStep(1)">← BACK</button>
-      <button class="btn btn-primary" onclick="goStep(3)">NEXT →</button>
-    </div>
-  </div>
-
-  <!-- STEP 3: Edge -->
-  <div id="step3" class="card hidden">
-    <div class="step-label">Step 03 / 05</div>
-    <h2><span class="icon">⚡</span> Your Edge</h2>
-    <div class="card-desc">Why will you win this trade? Without edge you're gambling. Be brutally honest — overconfidence here is the #1 cause of bad trades.</div>
-
-    <div class="field-row single">
-      <div class="field">
-        <label>Edge Type (select all that apply)</label>
-        <div class="chip-group" id="edgeChips">
-          <div class="chip" onclick="toggleChip(this)" data-val="information">📰 Information Edge</div>
-          <div class="chip" onclick="toggleChip(this)" data-val="analytical">📊 Analytical Edge</div>
-          <div class="chip" onclick="toggleChip(this)" data-val="timing">⏱ Timing Edge</div>
-          <div class="chip" onclick="toggleChip(this)" data-val="behavioral">🧠 Behavioral Edge</div>
-          <div class="chip" onclick="toggleChip(this)" data-val="network">🤝 Network Edge</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="field-row single" style="margin-top:20px;">
-      <div class="field">
-        <label>Conviction Score — <span id="edgeLabel">3 / 5</span></label>
-        <div class="range-val" id="edgeDisplay">3</div>
-        <input type="range" id="edgeScore" min="1" max="5" value="3" step="1" oninput="updateStep3()">
-        <div class="range-labels">
-          <span>1 (Speculation)</span>
-          <span>5 (Expert)</span>
-        </div>
-        <div class="tip" id="edgeTip">Moderate edge — some research, directional confidence.</div>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goStep(2)">← BACK</button>
-      <button class="btn btn-primary" onclick="goStep(4)">NEXT →</button>
-    </div>
-  </div>
-
-  <!-- STEP 4: Diversification -->
-  <div id="step4" class="card hidden">
-    <div class="step-label">Step 04 / 05</div>
-    <h2><span class="icon">🌐</span> Diversification</h2>
-    <div class="card-desc">Even the best investors are wrong 30–40% of the time. Diversification is your insurance policy. Rate your portfolio across 5 dimensions.</div>
-
-    <div class="field-row">
-      <div class="field">
-        <label>Current # of Positions</label>
-        <input type="number" id="numPositions" value="8" min="1" max="200" oninput="updateStep4()">
-      </div>
-      <div class="field">
-        <label>Correlation to This Asset</label>
-        <select id="correlation" onchange="updateStep4()">
-          <option value="low">Low — moves independently</option>
-          <option value="medium" selected>Medium — some overlap</option>
-          <option value="high">High — moves together</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="field-row single">
-      <div class="field">
-        <label>Diversification Dimensions Covered (0–5)</label>
-        <div class="range-val" id="divDisplay">3</div>
-        <input type="range" id="divScore" min="0" max="5" value="3" step="1" oninput="updateStep4()">
-        <div class="range-labels">
-          <span>0 (All same sector)</span>
-          <span>5 (Asset, Sector, Geo, Cap, Uncorrelated)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="computed" id="div-computed">
-      <div class="computed-item">
-        <div class="computed-label">Positions</div>
-        <div class="computed-val neutral" id="positionsTier">BALANCED</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Div Score</div>
-        <div class="computed-val" id="divVerdict">3 / 5</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Correlation</div>
-        <div class="computed-val" id="corrVerdict">⚠️ MEDIUM</div>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goStep(3)">← BACK</button>
-      <button class="btn btn-primary" onclick="goStep(5)">NEXT →</button>
-    </div>
-  </div>
-
-  <!-- STEP 5: Position Sizing -->
-  <div id="step5" class="card hidden">
-    <div class="step-label">Step 05 / 05</div>
-    <h2><span class="icon">📐</span> Position Sizing</h2>
-    <div class="card-desc">The Kelly Criterion gives you the mathematically optimal bet size. We use Half-Kelly for a more conservative real-world allocation.</div>
-
-    <div class="field-row">
-      <div class="field">
-        <label>Win Rate (your historical %) </label>
-        <div class="range-val" id="winDisplay">55%</div>
-        <input type="range" id="winRate" min="20" max="90" value="55" step="5" oninput="updateStep5()">
-        <div class="range-labels"><span>20%</span><span>90%</span></div>
-      </div>
-      <div class="field">
-        <label>Sizing Method</label>
-        <select id="sizingMethod" onchange="updateStep5()">
-          <option value="riskbased" selected>Risk-Based (recommended)</option>
-          <option value="kelly">Half-Kelly</option>
-          <option value="fixed">Fixed 5%</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="computed" id="ps-computed">
-      <div class="computed-item">
-        <div class="computed-label">Recommended Size</div>
-        <div class="computed-val neutral" id="recSize">$5,000</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">% of Portfolio</div>
-        <div class="computed-val" id="recPct">10%</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Max Allowed</div>
-        <div class="computed-val" id="maxAllowed">$12,500</div>
-      </div>
-      <div class="computed-item">
-        <div class="computed-label">Sizing OK?</div>
-        <div class="computed-val" id="sizingOK">✅ YES</div>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goStep(4)">← BACK</button>
-      <button class="btn btn-primary" id="verdictBtn" onclick="showVerdict()">GET VERDICT →</button>
-    </div>
-  </div>
-
-  <!-- VERDICT -->
-  <div id="verdictSection" class="hidden">
-    <div class="verdict-card" id="verdictCard">
-      <div class="verdict-glow"></div>
-      <span class="verdict-icon" id="verdictIcon">✅</span>
-      <div class="verdict-label" id="verdictText">ENTER</div>
-      <div class="verdict-sub" id="verdictSub"></div>
-
-      <div class="score-grid" id="scoreGrid"></div>
-
-      <!-- AI Analysis -->
-      <div class="ai-box">
-        <div class="ai-header">
-          <div class="ai-dot" id="aiDot"></div>
-          <div class="ai-label">Market Analysis</div>
-          <button id="cancelAIBtn" class="cancel-btn hidden" onclick="cancelAI()">✕ STOP</button>
-        </div>
-        <div class="ai-text" id="aiText"><span class="spinner"></span>Analyzing trade parameters...</div>
-      </div>
-
-      <div style="text-align:center;">
-        <button class="btn-reset" onclick="exportReport()" style="background:transparent;border:1px solid var(--border);color:var(--muted);margin-right:12px;">↓ EXPORT PDF</button>
-        <button class="btn-reset" onclick="resetAll()">↺ ANALYZE ANOTHER TRADE</button>
+      <div class="stat-item">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Dollars to Start</div>
       </div>
     </div>
   </div>
+</section>
 
-</div>
+<!-- 5 CRITERIA -->
+<section class="criteria-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">// the framework</div>
+      <div class="section-title">5 CRITERIA.<br>ONE VERDICT.</div>
+      <p class="section-desc">Every trade gets scored across five non-negotiable checkpoints. All 5 must pass before you enter — no exceptions.</p>
+    </div>
 
-<!-- SETTINGS PANEL -->
-<div id="settingsPanel" class="settings-panel hidden">
-  <div class="settings-header">
-    <span class="settings-title">SETTINGS</span>
-    <button class="icon-btn" onclick="toggleSettings()">✕</button>
+    <div class="criteria-grid">
+      <div class="criterion-card reveal">
+        <div class="criterion-num">01</div>
+        <span class="criterion-icon">🎯</span>
+        <div class="criterion-name">Risk / Reward</div>
+        <div class="criterion-desc">Minimum 2:1 ratio required. If the math doesn't work, the trade doesn't work.</div>
+      </div>
+      <div class="criterion-card reveal">
+        <div class="criterion-num">02</div>
+        <span class="criterion-icon">🛡️</span>
+        <div class="criterion-name">Loss Tolerance</div>
+        <div class="criterion-desc">Max drawdown vs portfolio size. Keeps a single trade from damaging your book.</div>
+      </div>
+      <div class="criterion-card reveal">
+        <div class="criterion-num">03</div>
+        <span class="criterion-icon">⚡</span>
+        <div class="criterion-name">Your Edge</div>
+        <div class="criterion-desc">Why will you win this trade? Without a defined edge, you're gambling — not trading.</div>
+      </div>
+      <div class="criterion-card reveal">
+        <div class="criterion-num">04</div>
+        <span class="criterion-icon">🌐</span>
+        <div class="criterion-name">Diversification</div>
+        <div class="criterion-desc">Portfolio correlation check. Even the best traders are wrong 30–40% of the time.</div>
+      </div>
+      <div class="criterion-card reveal">
+        <div class="criterion-num">05</div>
+        <span class="criterion-icon">📐</span>
+        <div class="criterion-name">Position Sizing</div>
+        <div class="criterion-desc">Kelly Criterion-based optimal size. Never bet more than your edge justifies.</div>
+      </div>
+    </div>
   </div>
-  <div class="settings-body">
-    <div class="settings-group">
-      <label>Min Risk/Reward Ratio</label>
-      <input type="number" id="s_rrMinimum" min="1" max="10" step="0.1" value="2.0">
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">// how it works</div>
+      <div class="section-title">THREE<br>STEPS.</div>
+      <p class="section-desc">From ticker to verdict in under two minutes. No spreadsheets. No second-guessing.</p>
     </div>
-    <div class="settings-group">
-      <label>Max Portfolio Risk %</label>
-      <input type="number" id="s_maxPortRisk" min="1" max="50" step="1" value="10">
-    </div>
-    <div class="settings-group">
-      <label>Min Edge Score (1-5)</label>
-      <input type="number" id="s_minEdgeScore" min="1" max="5" step="1" value="3">
-    </div>
-    <div class="settings-group">
-      <label>Min Div Score (0-5)</label>
-      <input type="number" id="s_minDivScore" min="0" max="5" step="1" value="3">
-    </div>
-    <div class="settings-group">
-      <label>Kelly Multiplier</label>
-      <input type="number" id="s_kellyMultiplier" min="0.1" max="1" step="0.1" value="0.5">
-    </div>
-    <div class="settings-group">
-      <label>Risk % per Trade</label>
-      <input type="number" id="s_riskPerTrade" min="0.5" max="10" step="0.5" value="2">
+
+    <div class="steps-grid reveal">
+      <div class="step-block">
+        <div class="step-num">01</div>
+        <div class="step-title">Enter Your Ticker</div>
+        <p class="step-desc">Type any stock, ETF, or crypto symbol. Live market data — price, 52-week range, volume — is fetched from Yahoo Finance and pre-fills your entry automatically.</p>
+        <span class="step-tag">YAHOO FINANCE DATA</span>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">02</div>
+        <div class="step-title">Score 5 Criteria</div>
+        <p class="step-desc">Walk through each criterion step by step. Set your target, stop-loss, drawdown limit, edge score, and position size. Every metric updates live as you type.</p>
+        <span class="step-tag">REAL-TIME SCORING</span>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="step-block">
+        <div class="step-num">03</div>
+        <div class="step-title">Get Your Verdict</div>
+        <p class="step-desc">ENTER, WAIT, or REJECT — with a full market analysis breaking down every pass and fail. Export a PDF or save to your trade history journal.</p>
+        <span class="step-tag">INSTANT VERDICT</span>
+      </div>
     </div>
   </div>
-  <div class="settings-footer">
-    <button class="btn btn-primary" onclick="saveSettingsForm()">SAVE</button>
-    <button class="btn btn-ghost" onclick="resetSettings()">RESET</button>
+</section>
+
+<!-- VERDICT DEMO -->
+<section class="demo-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">// possible outcomes</div>
+      <div class="section-title">WHAT WILL<br>YOUR TRADE<br>SCORE?</div>
+    </div>
+
+    <div class="demo-grid">
+      <div class="demo-card enter reveal">
+        <div class="glow"></div>
+        <span class="demo-icon">✅</span>
+        <div class="demo-label">ENTER</div>
+        <div class="demo-score">5 / 5 criteria passed</div>
+        <p class="demo-desc">All checkpoints clear. Risk/reward, loss limits, edge, diversification, and sizing are sound. Execute with confidence.</p>
+      </div>
+      <div class="demo-card wait reveal">
+        <div class="glow"></div>
+        <span class="demo-icon">⏳</span>
+        <div class="demo-label">WAIT</div>
+        <div class="demo-score">3–4 / 5 criteria passed</div>
+        <p class="demo-desc">Setup has potential but one or two parameters need adjustment. Review the failed criteria and come back stronger.</p>
+      </div>
+      <div class="demo-card reject reveal">
+        <div class="glow"></div>
+        <span class="demo-icon">❌</span>
+        <div class="demo-label">REJECT</div>
+        <div class="demo-score">0–2 / 5 criteria passed</div>
+        <p class="demo-desc">Risk profile is unfavorable. Do not enter. Fix the fundamentals — your capital is better preserved for a better setup.</p>
+      </div>
+    </div>
   </div>
-</div>
-<div id="settingsOverlay" class="settings-overlay hidden" onclick="toggleSettings()"></div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="container">
+    <div class="section-eyebrow">// ready when you are</div>
+    <div class="section-title">ANALYZE<br>YOUR NEXT<br>TRADE.</div>
+    <p class="cta-sub">Free. No account required. Works on any stock, ETF, or crypto.</p>
+    <a href="app.html" class="btn-hero">START ANALYSIS →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-logo">ENTRY<span>ENGINE</span></div>
+    <div class="footer-note">// 5-criteria risk-weighted analysis tool &nbsp;·&nbsp; not financial advice</div>
+  </div>
+</footer>
 
 <script>
-// ─── State ──────────────────────────────────────────────────────────
-let currentStep = 0;
-let selectedEdgeTypes = [];
-let tradeDirection = 'long';
-let aiCancelled = false;
-
-// ─── Settings ───────────────────────────────────────────────────────
-const SETTING_DEFAULTS = { rrMinimum: 2.0, maxPortRisk: 10, minEdgeScore: 3, minDivScore: 3, kellyMultiplier: 0.5, riskPerTrade: 2 };
-
-function loadSettings() {
-  return Object.assign({}, SETTING_DEFAULTS, JSON.parse(localStorage.getItem('settings') || '{}'));
-}
-
-function toggleSettings() {
-  const panel = document.getElementById('settingsPanel');
-  const overlay = document.getElementById('settingsOverlay');
-  panel.classList.toggle('hidden');
-  overlay.classList.toggle('hidden');
-  if (!panel.classList.contains('hidden')) populateSettingsForm();
-}
-
-function populateSettingsForm() {
-  const s = loadSettings();
-  Object.keys(SETTING_DEFAULTS).forEach(k => {
-    const el = document.getElementById('s_' + k);
-    if (el) el.value = s[k];
-  });
-}
-
-function saveSettingsForm() {
-  const s = {};
-  Object.keys(SETTING_DEFAULTS).forEach(k => {
-    const el = document.getElementById('s_' + k);
-    if (el) s[k] = parseFloat(el.value);
-  });
-  localStorage.setItem('settings', JSON.stringify(s));
-  toggleSettings();
-  if (currentStep >= 1 && currentStep <= 5) goStep(currentStep);
-}
-
-function resetSettings() {
-  localStorage.removeItem('settings');
-  populateSettingsForm();
-}
-
-// ─── Theme ───────────────────────────────────────────────────────────
-function toggleTheme() {
-  const isLight = document.documentElement.classList.toggle('light');
-  localStorage.setItem('theme', isLight ? 'light' : 'dark');
-  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀️';
-}
-
-// ─── Direction ──────────────────────────────────────────────────────
-function setDirection(dir) {
-  tradeDirection = dir;
-  document.querySelectorAll('.direction-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
-  updateStep1();
-}
-
-// ─── Form State Persistence ─────────────────────────────────────────
-function saveFormState() {
-  if (currentStep === 0) return;
-  const state = {
-    assetName: document.getElementById('assetName').value,
-    step: currentStep,
-    tradeDirection,
-    entryPrice: document.getElementById('entryPrice').value,
-    targetPrice: document.getElementById('targetPrice').value,
-    stopLoss: document.getElementById('stopLoss').value,
-    timeframe: document.getElementById('timeframe').value,
-    portfolioSize: document.getElementById('portfolioSize').value,
-    positionAmount: document.getElementById('positionAmount').value,
-    drawdown: document.getElementById('drawdown').value,
-    edgeScore: document.getElementById('edgeScore').value,
-    selectedEdgeTypes: selectedEdgeTypes,
-    numPositions: document.getElementById('numPositions').value,
-    correlation: document.getElementById('correlation').value,
-    divScore: document.getElementById('divScore').value,
-    winRate: document.getElementById('winRate').value,
-    sizingMethod: document.getElementById('sizingMethod').value
-  };
-  localStorage.setItem('formState', JSON.stringify(state));
-}
-
-function loadFormState() {
-  const raw = localStorage.getItem('formState');
-  if (!raw) return;
-  const s = JSON.parse(raw);
-  if (!s.assetName) return;
-  document.getElementById('assetName').value = s.assetName || '';
-  const fields = ['entryPrice','targetPrice','stopLoss','portfolioSize','positionAmount','drawdown','edgeScore','numPositions','divScore','winRate'];
-  fields.forEach(id => { if (s[id] !== undefined) document.getElementById(id).value = s[id]; });
-  if (s.timeframe) document.getElementById('timeframe').value = s.timeframe;
-  if (s.correlation) document.getElementById('correlation').value = s.correlation;
-  if (s.sizingMethod) document.getElementById('sizingMethod').value = s.sizingMethod;
-  if (s.tradeDirection) {
-    tradeDirection = s.tradeDirection;
-    document.querySelectorAll('.direction-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === tradeDirection));
-  }
-  if (Array.isArray(s.selectedEdgeTypes)) {
-    selectedEdgeTypes = s.selectedEdgeTypes;
-    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('selected', selectedEdgeTypes.includes(c.dataset.val)));
-  }
-  if (s.step > 0) {
-    document.getElementById('step0').style.display = 'none';
-    document.getElementById('progressWrap').classList.remove('hidden');
-    goStep(s.step);
-  }
-}
-
-// ─── Trade History ───────────────────────────────────────────────────
-function saveTradeToHistory(record) {
-  const history = JSON.parse(localStorage.getItem('tradeHistory') || '[]');
-  history.unshift(record);
-  if (history.length > 50) history.pop();
-  localStorage.setItem('tradeHistory', JSON.stringify(history));
-  renderHistory();
-}
-
-function renderHistory() {
-  const history = JSON.parse(localStorage.getItem('tradeHistory') || '[]');
-  const section = document.getElementById('historySection');
-  const list = document.getElementById('historyList');
-  if (!history.length) { section.style.display = 'none'; return; }
-  section.style.display = '';
-  list.innerHTML = history.map(t => {
-    const vClass = t.verdict === 'ENTER' ? 'pass' : t.verdict === 'WAIT' ? 'wait' : 'fail';
-    const icon = t.verdict === 'ENTER' ? '✅' : t.verdict === 'WAIT' ? '⏳' : '❌';
-    return `<div class="history-card">
-      <div class="history-card-main">
-        <div>
-          <div class="history-asset">${t.asset}</div>
-          <div class="history-date">${t.date} · ${t.timeframe}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="history-verdict ${vClass}">${icon} ${t.verdict}</div>
-          <div class="history-passes">${t.passCount}/5</div>
-          <button class="icon-btn" onclick="deleteTradeFromHistory(${t.id})" title="Delete">✕</button>
-        </div>
-      </div>
-      <div class="history-details">
-        <span>RR: ${t.rr ? t.rr.toFixed(1) : '—'}:1</span>
-        <span>Risk: ${t.portRisk ? t.portRisk.toFixed(1) : '—'}%</span>
-        <span>Edge: ${t.edgeScore}/5</span>
-        <span>Div: ${t.divScore}/5</span>
-        <span>Size: $${t.posAmt ? Math.round(t.posAmt).toLocaleString() : '—'}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function deleteTradeFromHistory(id) {
-  const history = JSON.parse(localStorage.getItem('tradeHistory') || '[]').filter(t => t.id !== id);
-  localStorage.setItem('tradeHistory', JSON.stringify(history));
-  renderHistory();
-}
-
-function clearHistory() {
-  if (confirm('Clear all trade history?')) {
-    localStorage.removeItem('tradeHistory');
-    renderHistory();
-  }
-}
-
-// ─── Export / PDF ────────────────────────────────────────────────────
-function exportReport() {
-  const asset = document.getElementById('assetName').value.trim().toUpperCase();
-  document.getElementById('verdictCard').setAttribute('data-asset', asset);
-  document.getElementById('verdictCard').setAttribute('data-date', new Date().toLocaleDateString());
-  window.print();
-}
-
-// ─── Cancel AI ───────────────────────────────────────────────────────
-function cancelAI() {
-  aiCancelled = true;
-  document.getElementById('cancelAIBtn').classList.add('hidden');
-}
-
-// ─── Step 0: Start ──────────────────────────────────────────────────
-async function startAnalysis() {
-  const name = document.getElementById('assetName').value.trim();
-  if (!name) { document.getElementById('assetName').focus(); return; }
-
-  const btn = document.querySelector('#step0 .btn-primary');
-  btn.textContent = 'FETCHING MARKET DATA...';
-  btn.disabled = true;
-
-  document.getElementById('step0').style.display = 'none';
-  document.getElementById('progressWrap').classList.remove('hidden');
-  goStep(1);
-
-  const banner = document.getElementById('marketBanner');
-  banner.classList.remove('hidden');
-  banner.className = 'market-banner loading';
-  banner.innerHTML = `<span class="spinner"></span><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">Fetching live market data for ${name.toUpperCase()}...</span>`;
-
-  try {
-    await fetchMarketData(name.toUpperCase());
-  } catch(e) {
-    banner.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">⚠ Could not load market data — enter prices manually.</span>`;
-    banner.className = 'market-banner';
-  }
-
-  btn.textContent = 'BEGIN ANALYSIS →';
-  btn.disabled = false;
-}
-
-// ─── Market Data via Yahoo Finance (CORS proxy) ──────────────────────
-async function fetchMarketData(ticker) {
-  const banner = document.getElementById('marketBanner');
-
-  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=1y&interval=1d`;
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
-    `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`
-  ];
-
-  let chartData = null;
-  for (const proxy of proxies) {
-    try {
-      const res = await fetch(proxy);
-      if (!res.ok) continue;
-      const json = await res.json();
-      if (json.chart?.result?.[0]) { chartData = json; break; }
-    } catch (_) { continue; }
-  }
-
-  if (!chartData?.chart?.result?.[0]) throw new Error('No market data found for ' + ticker);
-
-  const meta = chartData.chart.result[0].meta;
-  const price = meta.regularMarketPrice;
-  if (!price || price <= 0) throw new Error('Invalid price data');
-
-  const prevClose = meta.previousClose || meta.chartPreviousClose || price;
-  const changePct = prevClose ? ((price - prevClose) / prevClose * 100) : 0;
-  const high52w = meta.fiftyTwoWeekHigh;
-  const low52w = meta.fiftyTwoWeekLow;
-  const volume = formatVolume(meta.regularMarketVolume);
-  const name = meta.shortName || meta.longName || ticker;
-  const currencySymbol = meta.currency === 'USD' ? '$' : (meta.currency || '$');
-
-  document.getElementById('entryPrice').value = price.toFixed(2);
-  document.getElementById('targetPrice').value = (price * 1.20).toFixed(2);
-  document.getElementById('stopLoss').value = (price * 0.90).toFixed(2);
-  document.getElementById('prefillNotice').classList.remove('hidden');
-  updateStep1();
-
-  const isUp = changePct >= 0;
-  const changeLabel = (isUp ? '▲ +' : '▼ ') + Math.abs(changePct).toFixed(2) + '%';
-
-  banner.className = 'market-banner';
-  banner.innerHTML = `
-    <div>
-      <div class="market-ticker">${ticker}</div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${name}</div>
-    </div>
-    <div class="market-price">${currencySymbol}${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-    <div class="market-change ${isUp ? 'up' : 'down'}">${changeLabel} today</div>
-    <div class="market-stats">
-      <div class="market-stat">
-        <div class="market-stat-label">52W High</div>
-        <div class="market-stat-val">${high52w ? currencySymbol + parseFloat(high52w).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'}</div>
-      </div>
-      <div class="market-stat">
-        <div class="market-stat-label">52W Low</div>
-        <div class="market-stat-val">${low52w ? currencySymbol + parseFloat(low52w).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'}</div>
-      </div>
-      <div class="market-stat">
-        <div class="market-stat-label">Volume</div>
-        <div class="market-stat-val">${volume}</div>
-      </div>
-    </div>
-    <div class="market-meta"><div class="live-dot"></div> YAHOO FINANCE</div>
-  `;
-}
-
-function formatVolume(v) {
-  if (!v) return '—';
-  if (v >= 1e9) return (v / 1e9).toFixed(1) + 'B';
-  if (v >= 1e6) return (v / 1e6).toFixed(1) + 'M';
-  if (v >= 1e3) return (v / 1e3).toFixed(0) + 'K';
-  return v.toLocaleString();
-}
-
-// ─── Navigation ─────────────────────────────────────────────────────
-function goStep(n) {
-  [1,2,3,4,5].forEach(i => {
-    document.getElementById('step'+i).classList.add('hidden');
-  });
-  document.getElementById('verdictSection').classList.add('hidden');
-
-  const el = document.getElementById('step'+n);
-  el.classList.remove('hidden');
-  el.classList.add('active-card');
-
-  [1,2,3,4,5].forEach(i => {
-    const ps = document.getElementById('ps'+i);
-    ps.className = 'prog-step' + (i < n ? ' done' : i === n ? ' active' : '');
-  });
-
-  currentStep = n;
-
-  if (n===1) updateStep1();
-  if (n===2) updateStep2();
-  if (n===3) updateStep3();
-  if (n===4) updateStep4();
-  if (n===5) updateStep5();
-
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// ─── Step 1 Logic ───────────────────────────────────────────────────
-function updateStep1() {
-  const entry = parseFloat(document.getElementById('entryPrice').value) || 100;
-  const target = parseFloat(document.getElementById('targetPrice').value) || 130;
-  const stop = parseFloat(document.getElementById('stopLoss').value) || 90;
-  const settings = loadSettings();
-
-  // Input validation
-  const warnEl = document.getElementById('step1Warn');
-  if (tradeDirection === 'long') {
-    if (stop >= entry) {
-      warnEl.textContent = 'For a LONG trade, your stop-loss must be below your entry price.';
-      warnEl.classList.remove('hidden');
-    } else if (target <= entry) {
-      warnEl.textContent = 'For a LONG trade, your target must be above your entry price.';
-      warnEl.classList.remove('hidden');
-    } else {
-      warnEl.classList.add('hidden');
-    }
-  } else {
-    // SHORT
-    if (stop <= entry) {
-      warnEl.textContent = 'For a SHORT trade, your stop-loss must be above your entry price.';
-      warnEl.classList.remove('hidden');
-    } else if (target >= entry) {
-      warnEl.textContent = 'For a SHORT trade, your target must be below your entry price.';
-      warnEl.classList.remove('hidden');
-    } else {
-      warnEl.classList.add('hidden');
-    }
-  }
-
-  let gain, loss;
-  if (tradeDirection === 'short') {
-    gain = (entry - target) / entry * 100;
-    loss = (stop - entry) / entry * 100;
-  } else {
-    gain = (target - entry) / entry * 100;
-    loss = (entry - stop) / entry * 100;
-  }
-
-  const gainFixed = gain.toFixed(1);
-  const lossFixed = loss.toFixed(1);
-  const rr = (Math.abs(gain) / Math.abs(loss)).toFixed(1);
-
-  document.getElementById('expGain').textContent = gain > 0 ? '+' + gainFixed + '%' : gainFixed + '%';
-  document.getElementById('expLoss').textContent = '-' + Math.abs(lossFixed) + '%';
-  document.getElementById('rr').textContent = rr + ':1';
-
-  const pass = parseFloat(rr) >= settings.rrMinimum;
-  const rrV = document.getElementById('rrVerdict');
-  rrV.textContent = pass ? '✅ PASS' : '❌ FAIL';
-  rrV.className = 'computed-val ' + (pass ? 'good' : 'bad');
-
-  document.getElementById('rrTip').textContent =
-    pass
-      ? `→ ${rr}:1 ratio is strong. For every $1 risked you expect to gain $${rr}.`
-      : `→ Ratio below ${settings.rrMinimum}:1. Consider a higher target or tighter stop-loss.`;
-
-  document.getElementById('rr').className = 'computed-val ' + (pass ? 'good' : 'bad');
-
-  saveFormState();
-}
-
-// ─── Step 2 Logic ───────────────────────────────────────────────────
-function updateStep2() {
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
-  const pos = parseFloat(document.getElementById('positionAmount').value) || 5000;
-  const dd = parseInt(document.getElementById('drawdown').value) || 20;
-  const settings = loadSettings();
-
-  document.getElementById('drawdownDisplay').textContent = dd + '%';
-  document.getElementById('drawdownLabel').textContent = dd + '%';
-
-  const portPct = (pos / port * 100).toFixed(1);
-  const maxLoss = (pos * dd / 100).toFixed(0);
-  const portRiskPct = (maxLoss / port * 100).toFixed(1);
-
-  document.getElementById('portPct').textContent = portPct + '%';
-  document.getElementById('maxDollarLoss').textContent = '$' + parseInt(maxLoss).toLocaleString();
-  document.getElementById('portRisk').textContent = portRiskPct + '%';
-
-  let profile = 'CONSERVATIVE';
-  let cls = 'good';
-  if (dd >= 10 && dd < 25) { profile = 'MODERATE'; cls = 'neutral'; }
-  if (dd >= 25 && dd < 50) { profile = 'AGGRESSIVE'; cls = 'warn'; }
-  if (dd >= 50) { profile = 'VERY HIGH'; cls = 'bad'; }
-
-  document.getElementById('riskProfile').textContent = profile;
-  document.getElementById('riskProfile').className = 'computed-val ' + cls;
-
-  const riskOK = parseFloat(portRiskPct) <= 5;
-  document.getElementById('portRisk').className = 'computed-val ' + (riskOK ? 'good' : 'bad');
-
-  saveFormState();
-}
-
-// ─── Step 3 Logic ───────────────────────────────────────────────────
-function toggleChip(el) {
-  el.classList.toggle('selected');
-  const val = el.dataset.val;
-  if (selectedEdgeTypes.includes(val)) {
-    selectedEdgeTypes = selectedEdgeTypes.filter(e => e !== val);
-  } else {
-    selectedEdgeTypes.push(val);
-  }
-  saveFormState();
-}
-
-function updateStep3() {
-  const score = parseInt(document.getElementById('edgeScore').value);
-  document.getElementById('edgeDisplay').textContent = score;
-  document.getElementById('edgeLabel').textContent = score + ' / 5';
-
-  const tips = [
-    '',
-    'Pure speculation — no real edge. Maximum 1–2% of portfolio.',
-    'Weak edge — vague feeling or low conviction. Treat as a lottery ticket.',
-    'Moderate edge — some research done, directional confidence.',
-    'Strong edge — clear thesis, data-backed, catalyst identified.',
-    'Very strong edge — deep expertise, high conviction, asymmetric opportunity.'
-  ];
-
-  document.getElementById('edgeTip').textContent = '→ ' + tips[score];
-
-  saveFormState();
-}
-
-// ─── Step 4 Logic ───────────────────────────────────────────────────
-function updateStep4() {
-  const n = parseInt(document.getElementById('numPositions').value) || 8;
-  const corr = document.getElementById('correlation').value;
-  const div = parseInt(document.getElementById('divScore').value) || 3;
-  const settings = loadSettings();
-
-  document.getElementById('divDisplay').textContent = div;
-
-  let tier = 'CONCENTRATED';
-  let tierCls = 'bad';
-  if (n >= 4 && n <= 9) { tier = 'SEMI-CONC.'; tierCls = 'warn'; }
-  if (n >= 10 && n <= 20) { tier = 'BALANCED'; tierCls = 'good'; }
-  if (n > 20 && n <= 50) { tier = 'BROAD'; tierCls = 'good'; }
-  if (n > 50) { tier = 'INDEX-LIKE'; tierCls = 'neutral'; }
-
-  document.getElementById('positionsTier').textContent = tier;
-  document.getElementById('positionsTier').className = 'computed-val ' + tierCls;
-
-  document.getElementById('divVerdict').textContent = div + ' / 5';
-  document.getElementById('divVerdict').className = 'computed-val ' + (div >= settings.minDivScore ? 'good' : div === settings.minDivScore - 1 ? 'warn' : 'bad');
-
-  const corrMap = { low: ['✅ LOW', 'good'], medium: ['⚠️ MEDIUM', 'warn'], high: ['❌ HIGH', 'bad'] };
-  document.getElementById('corrVerdict').textContent = corrMap[corr][0];
-  document.getElementById('corrVerdict').className = 'computed-val ' + corrMap[corr][1];
-
-  saveFormState();
-}
-
-// ─── Step 5 Logic ───────────────────────────────────────────────────
-function updateStep5() {
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
-  const edge = parseInt(document.getElementById('edgeScore').value) || 3;
-  const win = parseInt(document.getElementById('winRate').value) || 55;
-  const method = document.getElementById('sizingMethod').value;
-  const entry = parseFloat(document.getElementById('entryPrice').value) || 100;
-  const target = parseFloat(document.getElementById('targetPrice').value) || 130;
-  const stop = parseFloat(document.getElementById('stopLoss').value) || 90;
-  const dd = parseInt(document.getElementById('drawdown').value) || 20;
-  const settings = loadSettings();
-
-  document.getElementById('winDisplay').textContent = win + '%';
-
-  let recSize;
-  if (method === 'fixed') {
-    recSize = port * 0.05;
-  } else if (method === 'kelly') {
-    const rr = Math.abs((target - entry) / (entry - stop));
-    const winFrac = win / 100;
-    const kelly = winFrac - (1 - winFrac) / rr;
-    const scaledKelly = Math.max(0, kelly * settings.kellyMultiplier);
-    recSize = port * scaledKelly;
-  } else {
-    // Risk-based: risk riskPerTrade% of portfolio, divide by drawdown%
-    const riskDollars = port * (settings.riskPerTrade / 100);
-    recSize = riskDollars / (dd / 100);
-  }
-
-  const maxByEdge = [0.01, 0.02, 0.05, 0.10, 0.20, 0.25][Math.min(edge, 5)] * port;
-  recSize = Math.min(recSize, maxByEdge, port * 0.25);
-  recSize = Math.max(recSize, 0);
-
-  const recPct = (recSize / port * 100).toFixed(1);
-  const max = port * 0.25;
-
-  document.getElementById('recSize').textContent = '$' + Math.round(recSize).toLocaleString();
-  document.getElementById('recPct').textContent = recPct + '%';
-  document.getElementById('maxAllowed').textContent = '$' + Math.round(max).toLocaleString();
-
-  const ok = recSize <= max;
-  document.getElementById('sizingOK').textContent = ok ? '✅ YES' : '❌ OVER LIMIT';
-  document.getElementById('sizingOK').className = 'computed-val ' + (ok ? 'good' : 'bad');
-  document.getElementById('recPct').className = 'computed-val ' + (parseFloat(recPct) <= 10 ? 'good' : parseFloat(recPct) <= 20 ? 'warn' : 'bad');
-
-  saveFormState();
-}
-
-// ─── Verdict ─────────────────────────────────────────────────────────
-function showVerdict() {
-  const asset = document.getElementById('assetName').value.trim().toUpperCase();
-  const settings = loadSettings();
-
-  const entry = parseFloat(document.getElementById('entryPrice').value) || 100;
-  const target = parseFloat(document.getElementById('targetPrice').value) || 130;
-  const stop = parseFloat(document.getElementById('stopLoss').value) || 90;
-  const timeframe = document.getElementById('timeframe').value;
-  const port = parseFloat(document.getElementById('portfolioSize').value) || 50000;
-  const posAmt = parseFloat(document.getElementById('positionAmount').value) || 5000;
-  const dd = parseInt(document.getElementById('drawdown').value) || 20;
-  const edgeScore = parseInt(document.getElementById('edgeScore').value) || 3;
-  const numPos = parseInt(document.getElementById('numPositions').value) || 8;
-  const corr = document.getElementById('correlation').value;
-  const divScore = parseInt(document.getElementById('divScore').value) || 3;
-  const winRate = parseInt(document.getElementById('winRate').value) || 55;
-  const method = document.getElementById('sizingMethod').value;
-
-  let gain, loss;
-  if (tradeDirection === 'short') {
-    gain = (entry - target) / entry * 100;
-    loss = (stop - entry) / entry * 100;
-  } else {
-    gain = (target - entry) / entry * 100;
-    loss = (entry - stop) / entry * 100;
-  }
-  const rr = Math.abs(gain) / Math.abs(loss);
-  const rrPass = rr >= settings.rrMinimum;
-
-  const maxLoss = posAmt * dd / 100;
-  const portRisk = maxLoss / port * 100;
-  const ltPass = portRisk <= settings.maxPortRisk;
-
-  const edgePass = edgeScore >= settings.minEdgeScore;
-  const divPass = divScore >= settings.minDivScore && corr !== 'high';
-
-  let recSize;
-  if (method === 'fixed') recSize = port * 0.05;
-  else if (method === 'kelly') {
-    const r = Math.abs((target - entry) / (entry - stop));
-    const w = winRate / 100;
-    recSize = port * Math.max(0, (w - (1 - w) / r) * settings.kellyMultiplier);
-  } else {
-    recSize = (port * (settings.riskPerTrade / 100)) / (dd / 100);
-  }
-  const maxByEdge = [0.01, 0.02, 0.05, 0.10, 0.20, 0.25][Math.min(edgeScore, 5)] * port;
-  recSize = Math.min(recSize, maxByEdge, port * 0.25);
-  const psPass = posAmt <= port * 0.25;
-
-  const passes = [rrPass, ltPass, edgePass, divPass, psPass];
-  const passCount = passes.filter(Boolean).length;
-
-  let verdict, icon, cls, sub;
-  if (passCount === 5) {
-    verdict = 'ENTER'; icon = '✅'; cls = 'pass';
-    sub = `All 5 criteria passed for ${asset}. Your risk/reward, drawdown limits, edge, diversification, and position sizing are all sound. This is a high-quality setup.`;
-  } else if (passCount >= 3) {
-    verdict = 'WAIT'; icon = '⏳'; cls = 'wait';
-    sub = `${passCount}/5 criteria passed for ${asset}. Some parameters need adjustment before this is worth entering. Review the failed criteria below.`;
-  } else {
-    verdict = 'REJECT'; icon = '❌'; cls = 'fail';
-    sub = `Only ${passCount}/5 criteria passed for ${asset}. Do not enter this trade. The risk profile is unfavorable. Fix the fundamentals first.`;
-  }
-
-  document.getElementById('verdictCard').className = 'verdict-card ' + cls;
-  document.getElementById('verdictIcon').textContent = icon;
-  document.getElementById('verdictText').textContent = verdict;
-  document.getElementById('verdictSub').textContent = sub;
-
-  const tiles = [
-    { label: 'Risk/Reward', val: rr.toFixed(1) + ':1', pass: rrPass },
-    { label: 'Loss Tolerance', val: portRisk.toFixed(1) + '% at risk', pass: ltPass },
-    { label: 'Edge Score', val: edgeScore + '/5', pass: edgePass },
-    { label: 'Diversification', val: divScore + '/5', pass: divPass },
-    { label: 'Position Size', val: (posAmt/port*100).toFixed(0) + '% alloc', pass: psPass },
-  ];
-
-  document.getElementById('scoreGrid').innerHTML = tiles.map(t => `
-    <div class="score-tile">
-      <div class="score-tile-label">${t.label}</div>
-      <div class="score-tile-val ${t.pass ? 'pass' : 'fail'}">${t.val}</div>
-    </div>
-  `).join('');
-
-  [1,2,3,4,5].forEach(i => document.getElementById('step'+i).classList.add('hidden'));
-  document.getElementById('verdictSection').classList.remove('hidden');
-  document.getElementById('verdictSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  [1,2,3,4,5].forEach(i => {
-    document.getElementById('ps'+i).className = 'prog-step done';
-  });
-
-  // Save to history
-  saveTradeToHistory({ id: Date.now(), date: new Date().toLocaleDateString(), asset, verdict, passCount, rr, portRisk, edgeScore, divScore: divScore, posAmt, port, timeframe, passes: [rrPass, ltPass, edgePass, divPass, psPass] });
-
-  generateMarketAnalysis(asset, { rr, gain, loss, rrPass, portRisk, ltPass, edgeScore, edgePass, selectedEdgeTypes, divScore, divPass, corr, numPos, recSize, psPass, posAmt, port, dd, timeframe, winRate, passCount, verdict });
-}
-
-// ─── Market Analysis (local, no API required) ─────────────────────────
-function generateMarketAnalysis(asset, d) {
-  aiCancelled = false;
-  document.getElementById('cancelAIBtn').classList.remove('hidden');
-
-  const s = loadSettings();
-  const sentences = [];
-
-  // 1. Opening — verdict summary
-  const verdictPhrases = {
-    ENTER:  `${asset} clears all 5 criteria and is set up for entry on the ${d.timeframe} timeframe.`,
-    WAIT:   `${asset} passes ${d.passCount}/5 criteria — the setup has merit but requires adjustments before committing capital on the ${d.timeframe} timeframe.`,
-    REJECT: `${asset} only passes ${d.passCount}/5 criteria on the ${d.timeframe} timeframe; this trade does not meet the minimum threshold and should be avoided.`
-  };
-  sentences.push(verdictPhrases[d.verdict] || `${asset} scored ${d.passCount}/5 criteria.`);
-
-  // 2. Risk/Reward
-  if (d.rrPass) {
-    sentences.push(`The ${d.rr.toFixed(2)}:1 risk-reward ratio is strong — a potential gain of +${d.gain.toFixed(1)}% against a max loss of -${d.loss.toFixed(1)}% gives you favourable asymmetry.`);
-  } else {
-    sentences.push(`The ${d.rr.toFixed(2)}:1 risk-reward falls short of the ${s.rrMinimum}:1 minimum — you're targeting +${d.gain.toFixed(1)}% while risking -${d.loss.toFixed(1)}%, which doesn't justify the exposure; move your target further out or tighten the stop.`);
-  }
-
-  // 3. Loss Tolerance
-  if (d.ltPass) {
-    sentences.push(`Portfolio risk sits at ${d.portRisk.toFixed(2)}%, well within your ${d.dd}% drawdown tolerance — capital preservation is intact on this position.`);
-  } else {
-    sentences.push(`At ${d.portRisk.toFixed(2)}% portfolio risk against a ${d.dd}% drawdown limit, this position is oversized for your risk profile — reduce allocation before entering.`);
-  }
-
-  // 4. Edge Score
-  const edgeStr = d.selectedEdgeTypes.length ? ` (${d.selectedEdgeTypes.join(', ')})` : '';
-  if (d.edgePass) {
-    sentences.push(`Edge score of ${d.edgeScore}/5${edgeStr} confirms enough confluence to support a trade — you have defined reasons to be in this position.`);
-  } else {
-    sentences.push(`Edge score of ${d.edgeScore}/5${edgeStr} is below the ${s.minEdgeScore}/5 threshold — without sufficient confluence the trade is speculative; wait for more confirming signals before pulling the trigger.`);
-  }
-
-  // 5. Diversification
-  if (d.divPass) {
-    sentences.push(`Diversification looks healthy at ${d.divScore}/5 with ${d.numPos} open position${d.numPos !== 1 ? 's' : ''} and ${d.corr} correlation — adding ${asset} won't meaningfully concentrate the book.`);
-  } else {
-    sentences.push(`Diversification score of ${d.divScore}/5 with ${d.numPos} position${d.numPos !== 1 ? 's' : ''} at ${d.corr} correlation raises concentration risk — ${asset} may be too correlated to existing holdings; reassess before adding exposure.`);
-  }
-
-  // 6. Position Sizing
-  const recRounded = Math.round(d.recSize);
-  const diff = d.posAmt - recRounded;
-  const diffPct = recRounded > 0 ? Math.abs(diff / recRounded * 100).toFixed(0) : 0;
-  if (d.psPass) {
-    sentences.push(`Position size of $${d.posAmt.toLocaleString()} aligns with the recommended $${recRounded.toLocaleString()} — disciplined sizing is in place.`);
-  } else if (diff > 0) {
-    sentences.push(`Your allocation of $${d.posAmt.toLocaleString()} is ${diffPct}% above the recommended $${recRounded.toLocaleString()} based on Kelly/half-Kelly sizing — cut it down to stay within your risk model.`);
-  } else {
-    sentences.push(`Your allocation of $${d.posAmt.toLocaleString()} is ${diffPct}% below the recommended $${recRounded.toLocaleString()} — if conviction is high and the other criteria improve, you have room to scale up.`);
-  }
-
-  // 7. Actionable tip
-  const failed = [];
-  if (!d.rrPass) failed.push('improve your risk-reward by widening the target or tightening the stop');
-  if (!d.ltPass) failed.push('reduce position size to stay within drawdown limits');
-  if (!d.edgePass) failed.push('wait for additional confirming signals to raise edge score');
-  if (!d.divPass) failed.push('review portfolio correlation before adding this position');
-  if (!d.psPass && diff > 0) failed.push(`trim allocation to $${recRounded.toLocaleString()} as the model recommends`);
-
-  if (failed.length > 0) {
-    sentences.push(`Priority action: ${failed[0].charAt(0).toUpperCase() + failed[0].slice(1)}.`);
-  } else {
-    sentences.push(`All systems green — execute with discipline, honour your stop, and let the trade play out.`);
-  }
-
-  const text = sentences.join(' ');
-
-  // Typewriter effect
-  const el = document.getElementById('aiText');
-  el.innerHTML = '';
-  let i = 0;
-  const cursor = document.createElement('span');
-  cursor.className = 'ai-cursor';
-
-  function type() {
-    if (aiCancelled) { cursor.remove(); document.getElementById('cancelAIBtn').classList.add('hidden'); return; }
-    if (i < text.length) {
-      el.textContent = text.slice(0, i + 1);
-      el.appendChild(cursor);
-      i++;
-      setTimeout(type, 14);
-    } else {
-      cursor.remove();
-      document.getElementById('cancelAIBtn').classList.add('hidden');
-    }
-  }
-  type();
-}
-
-// ─── Reset ──────────────────────────────────────────────────────────
-function resetAll() {
-  selectedEdgeTypes = [];
-  tradeDirection = 'long';
-  document.getElementById('assetName').value = '';
-  document.getElementById('step0').style.display = '';
-  document.getElementById('progressWrap').classList.add('hidden');
-  [1,2,3,4,5].forEach(i => document.getElementById('step'+i).classList.add('hidden'));
-  document.getElementById('verdictSection').classList.add('hidden');
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-  document.querySelectorAll('.direction-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === 'long'));
-  const banner = document.getElementById('marketBanner');
-  banner.classList.add('hidden');
-  banner.innerHTML = '';
-  document.getElementById('prefillNotice').classList.add('hidden');
-  document.getElementById('entryPrice').value = '100';
-  document.getElementById('targetPrice').value = '130';
-  document.getElementById('stopLoss').value = '90';
-  localStorage.removeItem('formState');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ─── Init ──────────────────────────────────────────────────────────
-(function init() {
-  // Apply saved theme
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'light') {
-    document.documentElement.classList.add('light');
-    document.getElementById('themeToggle').textContent = '🌙';
-  } else if (savedTheme === 'dark') {
-    document.documentElement.classList.remove('light');
-    document.getElementById('themeToggle').textContent = '☀️';
-  }
-
-  // Restore form state (may call goStep which triggers updateStep*)
-  loadFormState();
-
-  // Render history on step 0
-  renderHistory();
-
-  // Run default updates if still on step 0
-  if (currentStep === 0) {
-    updateStep1();
-    updateStep2();
-    updateStep3();
-    updateStep4();
-    updateStep5();
-  }
-})();
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
 </body>
 </html>
