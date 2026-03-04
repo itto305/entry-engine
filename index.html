@@ -1,765 +1,815 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EntryEngine — Know Before You Enter</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #1f1f1f;
-    --border-hover: #444444;
-    --accent: #c8f542;
-    --accent-hover: #d4ff55;
-    --accent-faint: rgba(200,245,66,0.08);
-    --accent-glow: rgba(200,245,66,0.22);
-    --accent2: #ff4d4d;
-    --accent3: #4daaff;
-    --text: #e8e8e8;
-    --muted: #555;
-    --muted2: #888;
-    --pass: #c8f542;
-    --wait: #ffb84d;
-    --fail: #ff4d4d;
-    --grid-line: rgba(200,245,66,0.03);
-    --nav-bg: rgba(10,10,10,0.85);
-    --hero-color: #ffffff;
-    --watermark: #1e1e1e;
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>EntryEngine — Know Before You Enter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+          :root {
+                  --bg: #ffffff;
+                  --bg-subtle: #f9f9fb;
+                  --bg-element: #f0f0f3;
+                  --text: #1c2024;
+                  --text-secondary: #60646c;
+                  --text-tertiary: #8b8d98;
+                  --border: #d9d9e0;
+                  --border-strong: #c8c9d2;
+                  --accent-green: #3dd68c;
+                  --accent-blue: #0587f0;
+                  --pass: #30a46c;
+                  --wait: #c47a0d;
+                  --fail: #e5484d;
+                  --pass-bg: #e9f9ee;
+                  --wait-bg: #fef3c7;
+                  --fail-bg: #fff1f1;
+                  --nav-bg: rgba(255,255,255,0.9);
+                  --dot-color: rgba(28,32,36,0.08);
+          }
+
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          html { scroll-behavior: smooth; }
+
+          body {
+                  background: var(--bg);
+                  color: var(--text);
+                  font-family: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+                  overflow-x: hidden;
+                  -webkit-font-smoothing: antialiased;
+          }
+
+          /* ── DOT GRID PATTERN ── */
+          .dot-pattern {
+                  position: absolute;
+                  inset: 0;
+                  width: 100%;
+                  height: 100%;
+                  background-image: radial-gradient(circle at 1px 1px, var(--dot-color) 1px, transparent 0);
+                  background-size: 15px 15px;
+                  background-position-x: 7.5px;
+                  background-position-y: 7.5px;
+                  pointer-events: none;
+          }
+
+          .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+          /* ── NAV ── */
+          nav {
+                  position: fixed;
+                  top: 0; left: 0; right: 0;
+                  z-index: 100;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  padding: 0 40px;
+                  height: 60px;
+                  background: var(--nav-bg);
+                  backdrop-filter: blur(12px);
+                  border-bottom: 1px solid var(--border);
+          }
+
+          .nav-logo {
+                  font-family: 'Inter', sans-serif;
+                  font-size: 16px;
+                  font-weight: 700;
+                  letter-spacing: -0.02em;
+                  color: var(--text);
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+          }
+
+          .nav-logo .logo-mark {
+                  width: 24px;
+                  height: 24px;
+                  background: var(--text);
+                  clip-path: polygon(50% 0%, 0% 100%, 25% 60%, 50% 100%, 75% 60%, 100% 100%);
+                  display: inline-block;
+          }
+
+          .nav-links {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  list-style: none;
+          }
+
+          .nav-links a {
+                                           font-size: 14px;
+                  font-weight: 400;
+                  color: var(--text);
+                  text-decoration: none;
+                  padding: 8px 16px;
+                  border-radius: 24px;
+                  transition: background 0.15s;
+            }
+          .nav-links a:hover { background: var(--bg-element); }
+
+          .nav-cta {
+                  font-family: 'Inter', sans-serif;
+                  font-size: 14px;
+                                    font-weight: 500;
+                  padding: 8px 20px;
+                  background: var(--text);
+                  color: #fff;
+                  border: none;
+                  border-radius: 48px;
+                  cursor: pointer;
+                  text-decoration: none;
+                  transition: opacity 0.15s;
+          }
+          .nav-cta:hover { opacity: 0.85; }
+
+          /* ── HERO ── */
+          .hero {
+                  min-height: 100vh;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  padding: 120px 0 80px;
+                  position: relative;
+                  overflow: hidden;
+                  background: url('https://static.expo.dev/static/home/9-2025/splash-bg.webp') center -116px no-repeat;
+                  background-size: cover;
+          }
+
+          .hero-content {
+                  position: relative;
+                  z-index: 1;
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  text-align: center;
+                  gap: 32px;
+          }
+
+          .hero-badge {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 8px;
+                  font-size: 13px;
+                  font-weight: 500;
+                  color: var(--text-secondary);
+                  background: var(--bg);
+                  border: 1px solid var(--border);
+                  border-radius: 48px;
+                  padding: 6px 14px;
+          }
+
+          .hero-badge .badge-dot {
+                  width: 6px; height: 6px;
+                  background: var(--accent-green);
+                  border-radius: 50%;
+          }
+
+          .hero-headline {
+        font-size: clamp(48px, 8vw, 80px);
+                  font-weight: 800;
+                  line-height: 1.1;
+                  letter-spacing: -0.03em;
+        color: var(--text);
+                  max-width: 800px;
   }
 
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #f5f5f0;
-      --surface: #ffffff;
-      --border: #ddddd8;
-      --border-hover: #aaaaaa;
-      --accent: #5a9e00;
-      --accent-hover: #4d8800;
-      --accent-faint: rgba(90,158,0,0.08);
-      --accent-glow: rgba(90,158,0,0.25);
-      --text: #1a1a1a;
-      --muted: #999;
-      --muted2: #666;
-      --pass: #5a9e00;
-      --wait: #b86000;
-      --fail: #cc2200;
-      --grid-line: rgba(90,158,0,0.06);
-      --nav-bg: rgba(245,245,240,0.92);
-      --hero-color: #111111;
-      --watermark: #e8e8e8;
-    }
-  }
+                .hero-sub {
+                        font-size: 18px;
+                        font-weight: 400;
+                        color: var(--text-secondary);
+                        max-width: 560px;
+                        line-height: 1.7;
+                }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+          .hero-actions {
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  flex-wrap: wrap;
+                  justify-content: center;
+          }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
-  }
+          .btn-primary {
+                  font-family: 'Inter', sans-serif;
+                  font-size: 16px;
+                  font-weight: 500;
+                  padding: 14px 28px;
+                  background: var(--text);
+                  color: #fff;
+                  border: none;
+                  border-radius: 48px;
+                  cursor: pointer;
+                  text-decoration: none;
+                  display: inline-block;
+                  transition: opacity 0.15s, transform 0.15s;
+          }
+          .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
-  }
+          .btn-secondary {
+                  font-family: 'Inter', sans-serif;
+                  font-size: 16px;
+                  font-weight: 500;
+                  padding: 14px 28px;
+                  background: transparent;
+                  color: var(--text);
+                  border: 1px solid var(--border);
+                  border-radius: 48px;
+                  cursor: pointer;
+                  text-decoration: none;
+                  display: inline-block;
+                  transition: background 0.15s, border-color 0.15s;
+          }
+          .btn-secondary:hover { background: var(--bg-element); border-color: var(--border-strong); }
 
-  section { position: relative; z-index: 1; }
+          .verdict-strip {
+                  display: flex;
+                  gap: 10px;
+                  justify-content: center;
+                  flex-wrap: wrap;
+          }
 
-  .container {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 0 32px;
-  }
+          .v-badge {
+                  font-size: 13px;
+                  font-weight: 500;
+                  padding: 6px 14px;
+                  border-radius: 48px;
+                  border: 1px solid;
+                  letter-spacing: 0;
+          }
+          .v-badge.enter { border-color: var(--pass); color: var(--pass); background: var(--pass-bg); }
+          .v-badge.wait  { border-color: var(--wait); color: var(--wait); background: var(--wait-bg); }
+          .v-badge.reject{ border-color: var(--fail); color: var(--fail); background: var(--fail-bg); }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 40px;
-    background: var(--nav-bg);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
+          /* ── STATS BAR ── */
+          .stats-bar {
+                  background: var(--bg-subtle);
+                  border-top: 1px solid var(--border);
+                  border-bottom: 1px solid var(--border);
+                  padding: 32px 0;
+          }
 
-  .nav-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px;
-    letter-spacing: 0.1em;
-    color: var(--text);
-  }
-  .nav-logo span { color: var(--accent); }
+          .stats-inner {
+                  display: flex;
+                  justify-content: center;
+                  gap: 80px;
+                  flex-wrap: wrap;
+          }
 
-  .nav-cta {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 0.12em;
-    padding: 10px 24px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  }
-  .nav-cta:hover {
-    background: var(--accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px var(--accent-glow);
-  }
+          .stat-item { text-align: center; }
 
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 140px 0 80px;
-  }
+          .stat-num {
+                  font-size: 42px;
+                  font-weight: 800;
+                  letter-spacing: -0.04em;
+                  color: var(--text);
+                  line-height: 1;
+          }
 
-  .hero-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.35em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 28px;
-    opacity: 0.85;
-    animation: fadeDown 0.8s ease both;
-  }
+          .stat-label {
+                  font-size: 12px;
+                  font-weight: 500;
+                  color: var(--text-secondary);
+                  text-transform: uppercase;
+                  letter-spacing: 0.08em;
+                  margin-top: 6px;
+          }
 
-  .hero-headline {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(72px, 12vw, 148px);
-    line-height: 0.88;
-    letter-spacing: 0.03em;
-    color: var(--hero-color);
-    animation: fadeDown 0.8s 0.1s ease both;
-    margin-bottom: 8px;
-  }
-  .hero-headline .accent { color: var(--accent); }
+          /* ── SECTION HEADERS ── */
+          .section-label {
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.1em;
+                  color: var(--text-secondary);
+                  text-transform: uppercase;
+                  margin-bottom: 16px;
+          }
 
-  .hero-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    color: var(--muted2);
-    max-width: 520px;
-    line-height: 1.8;
-    margin: 32px 0 48px;
-    animation: fadeDown 0.8s 0.2s ease both;
-  }
+          .section-title {
+                  font-size: clamp(32px, 5vw, 52px);
+                  font-weight: 800;
+                  letter-spacing: -0.03em;
+                  line-height: 1.1;
+                  color: var(--text);
+                  margin-bottom: 16px;
+          }
 
-  .hero-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    animation: fadeDown 0.8s 0.3s ease both;
-  }
+          .section-desc {
+                  font-size: 16px;
+                  font-weight: 400;
+                  color: var(--text-secondary);
+                  line-height: 1.7;
+                  max-width: 480px;
+          }
 
-  .btn-hero {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.12em;
-    padding: 18px 44px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 2px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.15s;
-  }
-  .btn-hero:hover {
-    background: var(--accent-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 36px var(--accent-glow);
-  }
+          /* ── CRITERIA ── */
+          .criteria-section {
+                  padding: 100px 0;
+                  position: relative;
+                  overflow: hidden;
+          }
 
-  .hero-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-  }
+          .criteria-header {
+                  text-align: center;
+                  margin-bottom: 60px;
+          }
 
-  .verdict-strip {
-    display: flex;
-    gap: 12px;
-    margin-top: 64px;
-    animation: fadeUp 0.8s 0.5s ease both;
-    flex-wrap: wrap;
-  }
+          .criteria-header .section-desc { margin: 0 auto; }
 
-  .v-badge {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.15em;
-    padding: 8px 18px;
-    border-radius: 2px;
-    border: 1px solid;
-  }
-  .v-badge.enter  { border-color: var(--pass);  color: var(--pass);  background: rgba(200,245,66,0.06); }
-  .v-badge.wait   { border-color: var(--wait);  color: var(--wait);  background: rgba(255,184,77,0.06); }
-  .v-badge.reject { border-color: var(--fail);  color: var(--fail);  background: rgba(255,77,77,0.06); }
+          .criteria-grid {
+                  display: grid;
+                  grid-template-columns: repeat(5, 1fr);
+                  gap: 12px;
+          }
 
-  /* ── STATS BAR ── */
-  .stats-bar {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 0;
-    margin-bottom: 100px;
-  }
+          .criterion-card {
+                  background: var(--bg);
+                  border: 1px solid var(--border);
+                  border-radius: 16px;
+                  padding: 28px 20px;
+                  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+          }
 
-  .stats-inner {
-    display: flex;
-    justify-content: center;
-    gap: 64px;
-    flex-wrap: wrap;
-  }
+          .criterion-card:hover {
+                  border-color: var(--border-strong);
+                  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+                  transform: translateY(-4px);
+          }
 
-  .stat-item { text-align: center; }
+          .criterion-num {
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--text-tertiary);
+                  letter-spacing: 0.05em;
+                  margin-bottom: 12px;
+          }
 
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    letter-spacing: 0.04em;
-    color: var(--accent);
-    line-height: 1;
-  }
+          .criterion-icon {
+                  font-size: 28px;
+                  margin-bottom: 16px;
+                  display: block;
+          }
 
-  .stat-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
+          .criterion-name {
+                  font-size: 15px;
+                  font-weight: 700;
+                  color: var(--text);
+                  margin-bottom: 10px;
+                  letter-spacing: -0.01em;
+          }
 
-  /* ── SECTION HEADERS ── */
-  .section-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.35em;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    opacity: 0.8;
-  }
+          .criterion-desc {
+                  font-size: 13px;
+                  color: var(--text-secondary);
+                  line-height: 1.6;
+          }
 
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(42px, 6vw, 72px);
-    letter-spacing: 0.04em;
-    line-height: 0.95;
-      color: var(--text);
-    margin-bottom: 16px;
-  }
+          /* ── HOW IT WORKS ── */
+          .how-section {
+                  padding: 100px 0;
+                  background: var(--bg-subtle);
+                  border-top: 1px solid var(--border);
+                  position: relative;
+                  overflow: hidden;
+          }
 
-  .section-desc {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--muted2);
-    line-height: 1.8;
-    max-width: 480px;
-  }
+          .how-header {
+                  text-align: center;
+                  margin-bottom: 60px;
+          }
 
-    /* ── SECTION CENTERING ── */
-    .criteria-section .reveal > .section-eyebrow,
-    .criteria-section .reveal > .section-title,
-    .criteria-section .reveal > .section-desc,
-    .how-section .reveal > .section-eyebrow,
-    .how-section .reveal > .section-title,
-    .how-section .reveal > .section-desc,
-    .demo-section .reveal > .section-eyebrow,
-    .demo-section .reveal > .section-title,
-    .demo-section .reveal > .section-desc {
-          text-align: center;
-          margin-left: auto;
-          margin-right: auto;
-    }
+          .how-header .section-desc { margin: 0 auto; }
+
+          .steps-grid {
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 16px;
+          }
+
+          .step-block {
+                  background: var(--bg);
+                  border: 1px solid var(--border);
+                  border-radius: 16px;
+                  padding: 36px 28px;
+                  transition: box-shadow 0.2s, transform 0.2s;
+          }
+
+          .step-block:hover {
+                  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+                  transform: translateY(-2px);
+          }
+
+          .step-num {
+                  font-size: 13px;
+                  font-weight: 600;
+                  color: var(--text-tertiary);
+                  letter-spacing: 0.05em;
+                  margin-bottom: 20px;
+          }
+
+          .step-title {
+                  font-size: 18px;
+                  font-weight: 700;
+                  letter-spacing: -0.02em;
+                  color: var(--text);
+                  margin-bottom: 12px;
+          }
+
+          .step-desc {
+                  font-size: 14px;
+                  color: var(--text-secondary);
+                  line-height: 1.7;
+          }
+
+          .step-tag {
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  margin-top: 20px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  color: var(--text-secondary);
+                  background: var(--bg-element);
+                  border: 1px solid var(--border);
+                  padding: 5px 12px;
+                  border-radius: 48px;
+          }
+
+          /* ── VERDICT DEMO ── */
+          .demo-section {
+                  padding: 100px 0;
+                  border-top: 1px solid var(--border);
+                  position: relative;
+                  overflow: hidden;
+          }
+
+          .demo-header {
+                  text-align: center;
+                  margin-bottom: 60px;
+          }
+
+          .demo-grid {
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 16px;
+          }
+
+          .demo-card {
+                  border-radius: 16px;
+                  padding: 36px 28px;
+                  text-align: center;
+                  border: 1px solid;
+                  transition: transform 0.2s, box-shadow 0.2s;
+          }
+
+          .demo-card:hover {
+                  transform: translateY(-4px);
+                  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+          }
+
+          .demo-card.enter {
+                  border-color: #b4e8ce;
+                  background: linear-gradient(145deg, #f0faf4, #ffffff);
+          }
+
+          .demo-card.wait {
+                  border-color: #f0d090;
+                  background: linear-gradient(145deg, #fdf8ec, #ffffff);
+          }
+
+          .demo-card.reject {
+                  border-color: #f9bfc1;
+                  background: linear-gradient(145deg, #fff4f4, #ffffff);
+          }
+
+          .demo-icon {
+                  font-size: 36px;
+                  display: block;
+                  margin-bottom: 16px;
+          }
+
+          .demo-label {
+                  font-size: 28px;
+                  font-weight: 800;
+                  letter-spacing: -0.03em;
+                  line-height: 1;
+                  margin-bottom: 8px;
+          }
+
+          .demo-card.enter .demo-label { color: var(--pass); }
+          .demo-card.wait .demo-label  { color: var(--wait); }
+          .demo-card.reject .demo-label{ color: var(--fail); }
+
+          .demo-score {
+                  font-size: 13px;
+                  font-weight: 500;
+                  color: var(--text-secondary);
+                  margin-bottom: 16px;
+          }
+
+          .demo-desc {
+                  font-size: 14px;
+                  color: var(--text-secondary);
+                  line-height: 1.6;
+          }
+
+          /* ── CTA ── */
+          .cta-section {
+                  background: var(--bg-subtle);
+                  border-top: 1px solid var(--border);
+                  padding: 120px 0;
+                  text-align: center;
+                  position: relative;
+                  overflow: hidden;
+          }
+
+          .cta-sub {
+                  font-size: 16px;
+                  color: var(--text-secondary);
+                  margin: 16px auto 40px;
+                  max-width: 480px;
+                  line-height: 1.7;
+          }
+
+          /* ── FOOTER ── */
+          footer {
+                  border-top: 1px solid var(--border);
+                  padding: 32px 0;
+                  text-align: center;
+          }
+
+          .footer-logo {
+                  font-size: 15px;
+                  font-weight: 700;
+                  letter-spacing: -0.01em;
+                  color: var(--text-secondary);
+                  margin-bottom: 8px;
+          }
+
+          .footer-logo span {
+                  background: linear-gradient(to right, var(--accent-blue), var(--accent-green));
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+          }
+
+          .footer-note {
+                  font-size: 12px;
+                  color: var(--text-tertiary);
+          }
+
+          /* ── ANIMATIONS ── */
+          @keyframes fadeDown {
+                  from { opacity: 0; transform: translateY(-16px); }
+                  to   { opacity: 1; transform: translateY(0); }
+          }
+
+          @keyframes fadeUp {
+                  from { opacity: 0; transform: translateY(16px); }
+                  to   { opacity: 1; transform: translateY(0); }
+          }
+
+          .hero-badge   { animation: fadeDown 0.7s ease both; }
+          .hero-headline{ animation: fadeDown 0.7s 0.08s ease both; }
+          .hero-sub     { animation: fadeDown 0.7s 0.16s ease both; }
+          .hero-actions { animation: fadeDown 0.7s 0.24s ease both; }
+          .verdict-strip{ animation: fadeUp  0.7s 0.36s ease both; }
+
+          .reveal {
+                  opacity: 0;
+                  transform: translateY(24px);
+                  transition: opacity 0.7s ease, transform 0.7s ease;
+          }
+          .reveal.visible { opacity: 1; transform: translateY(0); }
+
+          /* ── RESPONSIVE ── */
+          @media (max-width: 900px) {
+                  nav { padding: 0 24px; }
+                  .nav-links { display: none; }
+                  .criteria-grid { grid-template-columns: repeat(3, 1fr); }
+                  .steps-grid { grid-template-columns: 1fr; }
+                  .demo-grid { grid-template-columns: 1fr; }
+                  .stats-inner { gap: 40px; }
+          }
+
+          @media (max-width: 600px) {
+                  .criteria-grid { grid-template-columns: repeat(2, 1fr); }
+                  nav { padding: 0 20px; }
+                  .hero { padding: 100px 0 60px; }
+                  .hero-actions { flex-direction: column; align-items: center; }
+          }
+        </style>
+  </head>
+  <body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">
+              <span class="logo-mark"></span>span>
+              EntryEngine
+        </div>div>
+        <ul class="nav-links">
+              <li><a href="#">How It Works</a>a></li>
+            <li><a href="#">Criteria</a>a></li>
+            <li><a href="#">Verdicts</a>a></li>
+        </ul>ul>
+      <a href="app.html" class="nav-cta">Open App &rarr;</a>a>
+    </nav>
   
-  /* ── CRITERIA ── */
-  .criteria-section { padding: 0 0 100px; }
-
-  .criteria-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-top: 56px;
-  }
-
-  .criterion-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    padding: 28px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-
-  .criterion-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .criterion-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
-  .criterion-card:hover::before { opacity: 1; }
-
-  .criterion-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--watermark);
-    line-height: 1;
-    margin-bottom: 16px;
-  }
-
-  .criterion-icon { font-size: 28px; margin-bottom: 12px; display: block; }
-
-  .criterion-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 0.06em;
-    color: var(--text);
-    margin-bottom: 10px;
-  }
-
-  .criterion-desc {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how-section {
-    padding: 100px 0;
-    border-top: 1px solid var(--border);
-  }
-
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    margin-top: 56px;
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .step-block {
-    background: var(--surface);
-    padding: 40px 32px;
-    position: relative;
-  }
-
-  .step-block:not(:last-child) { border-right: 1px solid var(--border); }
-
-  .step-arrow {
-    position: absolute;
-    top: 50%; right: -14px;
-    transform: translateY(-50%);
-    font-family: 'DM Mono', monospace;
-    font-size: 18px;
-    color: var(--accent);
-    z-index: 2;
-  }
-
-  .step-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 64px;
-    color: var(--watermark);
-    line-height: 1;
-    margin-bottom: 20px;
-  }
-
-  .step-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px;
-    letter-spacing: 0.05em;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .step-desc {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--muted2);
-    line-height: 1.8;
-  }
-
-  .step-tag {
-    display: inline-block;
-    margin-top: 16px;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: var(--accent);
-    border: 1px solid rgba(200,245,66,0.3);
-    padding: 4px 10px;
-    border-radius: 2px;
-  }
-
-  /* ── VERDICT DEMO ── */
-  .demo-section {
-    padding: 100px 0;
-    border-top: 1px solid var(--border);
-  }
-
-  .demo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 56px;
-  }
-
-  .demo-card {
-    border-radius: 2px;
-    padding: 36px 28px;
-    text-align: center;
-    border: 1px solid;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .demo-card .glow {
-    position: absolute;
-    inset: 0;
-    opacity: 0.06;
-    pointer-events: none;
-  }
-
-  .demo-card.enter  { border-color: var(--pass); }
-  .demo-card.enter  .glow { background: radial-gradient(ellipse at 50% 0%, var(--pass), transparent 70%); }
-  .demo-card.wait   { border-color: var(--wait); }
-  .demo-card.wait   .glow { background: radial-gradient(ellipse at 50% 0%, var(--wait), transparent 70%); }
-  .demo-card.reject { border-color: var(--fail); }
-  .demo-card.reject .glow { background: radial-gradient(ellipse at 50% 0%, var(--fail), transparent 70%); }
-
-  .demo-icon { font-size: 40px; display: block; margin-bottom: 12px; }
-
-  .demo-label {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    margin-bottom: 10px;
-  }
-
-  .demo-card.enter  .demo-label { color: var(--pass); }
-  .demo-card.wait   .demo-label { color: var(--wait); }
-  .demo-card.reject .demo-label { color: var(--fail); }
-
-  .demo-desc {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted2);
-    line-height: 1.7;
-    margin-top: 8px;
-  }
-
-  .demo-score {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    margin-top: 16px;
-    color: var(--muted);
-  }
-
-  /* ── CTA ── */
-  .cta-section {
-    border-top: 1px solid var(--border);
-    padding: 120px 0;
-    text-align: center;
-  }
-
-  .cta-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--muted2);
-    margin-bottom: 48px;
-    line-height: 1.8;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 32px 0;
-    text-align: center;
-  }
-
-  .footer-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .footer-logo span { color: var(--accent); }
-
-  .footer-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: #333;
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 900px) {
-    nav { padding: 16px 24px; }
-    .criteria-grid { grid-template-columns: repeat(3, 1fr); }
-    .steps-grid { grid-template-columns: 1fr; }
-    .step-block:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
-    .step-arrow { display: none; }
-    .demo-grid { grid-template-columns: 1fr; }
-    .stats-inner { gap: 32px; }
-  }
-
-  @media (max-width: 600px) {
-    .criteria-grid { grid-template-columns: repeat(2, 1fr); }
-    nav { padding: 14px 20px; }
-    .hero { padding: 110px 0 60px; }
-    .hero-actions { flex-direction: column; align-items: flex-start; }
-  }
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">ENTRY<span>ENGINE</span></div>
-  <a href="app.html" class="nav-cta">OPEN APP →</a>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-eyebrow">// 5-criteria risk-weighted trade framework</div>
-    <h1 class="hero-headline">
-      KNOW<br>
-      <span class="accent">BEFORE</span><br>
-      YOU ENTER.
-    </h1>
-    <p class="hero-sub">
-      EntryEngine scores every trade across 5 objective criteria — risk/reward, loss tolerance, edge, diversification, and position sizing — and delivers a clear verdict before you risk a dollar.
-    </p>
-    <div class="hero-actions">
-      <a href="app.html" class="btn-hero">ANALYZE A TRADE →</a>
-      <span class="hero-note">// no signup &nbsp;·&nbsp; no cost &nbsp;·&nbsp; real-time data</span>
-    </div>
-    <div class="verdict-strip">
-      <div class="v-badge enter">✅ &nbsp;ENTER</div>
-      <div class="v-badge wait">⏳ &nbsp;WAIT</div>
-      <div class="v-badge reject">❌ &nbsp;REJECT</div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS BAR -->
-<section class="stats-bar reveal">
-  <div class="container">
-    <div class="stats-inner">
-      <div class="stat-item">
-        <div class="stat-num">5</div>
-        <div class="stat-label">Scoring Criteria</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">3</div>
-        <div class="stat-label">Clear Verdicts</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">∞</div>
-        <div class="stat-label">Trades Analyzed</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">0</div>
-        <div class="stat-label">Dollars to Start</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 5 CRITERIA -->
-<section class="criteria-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-eyebrow">// the framework</div>
-      <div class="section-title">5 CRITERIA.<br>ONE VERDICT.</div>
-      <p class="section-desc">Every trade gets scored across five non-negotiable checkpoints. All 5 must pass before you enter — no exceptions.</p>
-    </div>
-
-    <div class="criteria-grid">
-      <div class="criterion-card reveal">
-        <div class="criterion-num">01</div>
-        <span class="criterion-icon">🎯</span>
-        <div class="criterion-name">Risk / Reward</div>
-        <div class="criterion-desc">Minimum 2:1 ratio required. If the math doesn't work, the trade doesn't work.</div>
-      </div>
-      <div class="criterion-card reveal">
-        <div class="criterion-num">02</div>
-        <span class="criterion-icon">🛡️</span>
-        <div class="criterion-name">Loss Tolerance</div>
-        <div class="criterion-desc">Max drawdown vs portfolio size. Keeps a single trade from damaging your book.</div>
-      </div>
-      <div class="criterion-card reveal">
-        <div class="criterion-num">03</div>
-        <span class="criterion-icon">⚡</span>
-        <div class="criterion-name">Your Edge</div>
-        <div class="criterion-desc">Why will you win this trade? Without a defined edge, you're gambling — not trading.</div>
-      </div>
-      <div class="criterion-card reveal">
-        <div class="criterion-num">04</div>
-        <span class="criterion-icon">🌐</span>
-        <div class="criterion-name">Diversification</div>
-        <div class="criterion-desc">Portfolio correlation check. Even the best traders are wrong 30–40% of the time.</div>
-      </div>
-      <div class="criterion-card reveal">
-        <div class="criterion-num">05</div>
-        <span class="criterion-icon">📐</span>
-        <div class="criterion-name">Position Sizing</div>
-        <div class="criterion-desc">Kelly Criterion-based optimal size. Never bet more than your edge justifies.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-eyebrow">// how it works</div>
-      <div class="section-title">THREE<br>STEPS.</div>
-      <p class="section-desc">From ticker to verdict in under two minutes. No spreadsheets. No second-guessing.</p>
-    </div>
-
-    <div class="steps-grid reveal">
-      <div class="step-block">
-        <div class="step-num">01</div>
-        <div class="step-title">Enter Your Ticker</div>
-        <p class="step-desc">Type any stock, ETF, or crypto symbol. Live market data — price, 52-week range, volume — is fetched from Yahoo Finance and pre-fills your entry automatically.</p>
-        <span class="step-tag">YAHOO FINANCE DATA</span>
-        <div class="step-arrow">→</div>
-      </div>
-      <div class="step-block">
-        <div class="step-num">02</div>
-        <div class="step-title">Score 5 Criteria</div>
-        <p class="step-desc">Walk through each criterion step by step. Set your target, stop-loss, drawdown limit, edge score, and position size. Every metric updates live as you type.</p>
-        <span class="step-tag">REAL-TIME SCORING</span>
-        <div class="step-arrow">→</div>
-      </div>
-      <div class="step-block">
-        <div class="step-num">03</div>
-        <div class="step-title">Get Your Verdict</div>
-        <p class="step-desc">ENTER, WAIT, or REJECT — with a full market analysis breaking down every pass and fail. Export a PDF or save to your trade history journal.</p>
-        <span class="step-tag">INSTANT VERDICT</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- VERDICT DEMO -->
-<section class="demo-section">
-  <div class="container">
-    <div class="reveal">
-      <div class="section-eyebrow">// possible outcomes</div>
-      <div class="section-title">WHAT WILL<br>YOUR TRADE<br>SCORE?</div>
-    </div>
-
-    <div class="demo-grid">
-      <div class="demo-card enter reveal">
-        <div class="glow"></div>
-        <span class="demo-icon">✅</span>
-        <div class="demo-label">ENTER</div>
-        <div class="demo-score">5 / 5 criteria passed</div>
-        <p class="demo-desc">All checkpoints clear. Risk/reward, loss limits, edge, diversification, and sizing are sound. Execute with confidence.</p>
-      </div>
-      <div class="demo-card wait reveal">
-        <div class="glow"></div>
-        <span class="demo-icon">⏳</span>
-        <div class="demo-label">WAIT</div>
-        <div class="demo-score">3–4 / 5 criteria passed</div>
-        <p class="demo-desc">Setup has potential but one or two parameters need adjustment. Review the failed criteria and come back stronger.</p>
-      </div>
-      <div class="demo-card reject reveal">
-        <div class="glow"></div>
-        <span class="demo-icon">❌</span>
-        <div class="demo-label">REJECT</div>
-        <div class="demo-score">0–2 / 5 criteria passed</div>
-        <p class="demo-desc">Risk profile is unfavorable. Do not enter. Fix the fundamentals — your capital is better preserved for a better setup.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section reveal">
-  <div class="container">
-    <div class="section-eyebrow">// ready when you are</div>
-    <div class="section-title">ANALYZE<br>YOUR NEXT<br>TRADE.</div>
-    <p class="cta-sub">Free. No account required. Works on any stock, ETF, or crypto.</p>
-    <a href="app.html" class="btn-hero">START ANALYSIS →</a>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="container">
-    <div class="footer-logo">ENTRY<span>ENGINE</span></div>
-    <div class="footer-note">// 5-criteria risk-weighted analysis tool &nbsp;·&nbsp; not financial advice</div>
-  </div>
-</footer>
-
-<script>
-  // Scroll reveal
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.12 });
-
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
-</body>
-</html>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="dot-pattern"></div>div>
+    <div class="container">
+        <div class="hero-content">
+              <div class="hero-badge">
+                      <span class="badge-dot"></span>span>
+                      5-criteria risk-weighted trade framework
+              </div>div>
+              <h1 class="hero-headline">
+                      Know Before<br>You Enter.
+              </h1>h1>
+              <p class="hero-sub">
+                EntryEngine scores every trade across 5 objective criteria &mdash; risk/reward, loss tolerance, edge, diversification, and position sizing &mdash; and delivers a clear verdict before you risk a dollar.
+              </p>p>
+              <div class="hero-actions">
+                      <a href="app.html" class="btn-primary">Analyze a Trade &rarr;</a>a>
+                      <a href="#how" class="btn-secondary">How It Works</a>a>
+              </div>div>
+              <div class="verdict-strip">
+                      <div class="v-badge enter">&#x2705;&nbsp; Enter</div>div>
+                      <div class="v-badge wait">&#x23F3;&nbsp; Wait</div>div>
+                      <div class="v-badge reject">&#x274C;&nbsp; Reject</div>div>
+              </div>div>
+        </div>div>
+    </div>div>
+  </section>section>
+  
+  <!-- STATS BAR -->
+  <section class="stats-bar reveal">
+    <div class="container">
+        <div class="stats-inner">
+              <div class="stat-item">
+                      <div class="stat-num">5</div>div>
+                      <div class="stat-label">Scoring Criteria</div>div>
+              </div>div>
+              <div class="stat-item">
+                      <div class="stat-num">3</div>div>
+                      <div class="stat-label">Clear Verdicts</div>div>
+              </div>div>
+              <div class="stat-item">
+                      <div class="stat-num">&infin;</div>div>
+                      <div class="stat-label">Trades Analyzed</div>div>
+              </div>div>
+              <div class="stat-item">
+                      <div class="stat-num">0</div>div>
+                      <div class="stat-label">Dollars to Start</div>div>
+              </div>div>
+        </div>div>
+    </div>div>
+  </section>section>
+  
+  <!-- 5 CRITERIA -->
+  <section class="criteria-section" id="criteria">
+    <div class="dot-pattern"></div>div>
+    <div class="container">
+        <div class="criteria-header reveal">
+              <div class="section-label">The Framework</div>div>
+              <div class="section-title">5 Criteria. One Verdict.</div>div>
+              <p class="section-desc">Every trade gets scored across five non-negotiable checkpoints. All 5 must pass before you enter &mdash; no exceptions.</p>p>
+        </div>div>
+        <div class="criteria-grid">
+              <div class="criterion-card reveal">
+                      <div class="criterion-num">01</div>div>
+                      <span class="criterion-icon">&#x1F3AF;</span>span>
+                      <div class="criterion-name">Risk / Reward</div>div>
+                      <div class="criterion-desc">Minimum 2:1 ratio required. If the math doesn't work, the trade doesn't work.</div>div>
+              </div>div>
+              <div class="criterion-card reveal">
+                      <div class="criterion-num">02</div>div>
+                      <span class="criterion-icon">&#x1F6E1;&#xFE0F;</span>span>
+                      <div class="criterion-name">Loss Tolerance</div>div>
+                      <div class="criterion-desc">Max drawdown vs portfolio size. Keeps a single trade from damaging your book.</div>div>
+              </div>div>
+              <div class="criterion-card reveal">
+                      <div class="criterion-num">03</div>div>
+                      <span class="criterion-icon">&#x26A1;</span>span>
+                      <div class="criterion-name">Your Edge</div>div>
+                      <div class="criterion-desc">Why will you win this trade? Without a defined edge, you're gambling &mdash; not trading.</div>div>
+              </div>div>
+              <div class="criterion-card reveal">
+                      <div class="criterion-num">04</div>div>
+                      <span class="criterion-icon">&#x1F310;</span>span>
+                      <div class="criterion-name">Diversification</div>div>
+                      <div class="criterion-desc">Portfolio correlation check. Even the best traders are wrong 30&ndash;40% of the time.</div>div>
+              </div>div>
+              <div class="criterion-card reveal">
+                      <div class="criterion-num">05</div>div>
+                      <span class="criterion-icon">&#x1F4D0;</span>span>
+                      <div class="criterion-name">Position Sizing</div>div>
+                      <div class="criterion-desc">Kelly Criterion-based optimal size. Never bet more than your edge justifies.</div>div>
+              </div>div>
+        </div>div>
+    </div>div>
+  </section>section>
+  
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="dot-pattern"></div>div>
+    <div class="container">
+        <div class="how-header reveal">
+              <div class="section-label">How It Works</div>div>
+              <div class="section-title">Three Steps.</div>div>
+              <p class="section-desc">From ticker to verdict in under two minutes. No spreadsheets. No second-guessing.</p>p>
+        </div>div>
+        <div class="steps-grid reveal">
+              <div class="step-block">
+                      <div class="step-num">01</div>div>
+                      <div class="step-title">Enter Your Ticker</div>div>
+                      <p class="step-desc">Type any stock, ETF, or crypto symbol. Live market data &mdash; price, 52-week range, volume &mdash; is fetched from Yahoo Finance and pre-fills your entry automatically.</p>p>
+                      <span class="step-tag">Yahoo Finance Data &rarr;</span>span>
+              </div>div>
+              <div class="step-block">
+                      <div class="step-num">02</div>div>
+                      <div class="step-title">Score 5 Criteria</div>div>
+                      <p class="step-desc">Walk through each criterion step by step. Set your target, stop-loss, drawdown limit, edge score, and position size. Every metric updates live as you type.</p>p>
+                      <span class="step-tag">Real-Time Scoring &rarr;</span>span>
+              </div>div>
+              <div class="step-block">
+                      <div class="step-num">03</div>div>
+                      <div class="step-title">Get Your Verdict</div>div>
+                      <p class="step-desc">Enter, Wait, or Reject &mdash; with a full market analysis breaking down every pass and fail. Export a PDF or save to your trade history journal.</p>p>
+                      <span class="step-tag">Instant Verdict</span>span>
+              </div>div>
+        </div>div>
+    </div>div>
+  </section>section>
+  
+  <!-- VERDICT DEMO -->
+  <section class="demo-section" id="verdicts">
+    <div class="dot-pattern"></div>div>
+    <div class="container">
+        <div class="demo-header reveal">
+              <div class="section-label">Possible Outcomes</div>div>
+              <div class="section-title">What Will Your<br>Trade Score?</div>div>
+        </div>div>
+        <div class="demo-grid">
+              <div class="demo-card enter reveal">
+                      <span class="demo-icon">&#x2705;</span>span>
+                      <div class="demo-label">Enter</div>div>
+                      <div class="demo-score">5 / 5 criteria passed</div>div>
+                      <p class="demo-desc">All checkpoints clear. Risk/reward, loss limits, edge, diversification, and sizing are sound. Execute with confidence.</p>p>
+              </div>div>
+              <div class="demo-card wait reveal">
+                      <span class="demo-icon">&#x23F3;</span>span>
+                      <div class="demo-label">Wait</div>div>
+                      <div class="demo-score">3&ndash;4 / 5 criteria passed</div>div>
+                      <p class="demo-desc">Setup has potential but one or two parameters need adjustment. Review the failed criteria and come back stronger.</p>p>
+              </div>div>
+              <div class="demo-card reject reveal">
+                      <span class="demo-icon">&#x274C;</span>span>
+                      <div class="demo-label">Reject</div>div>
+                      <div class="demo-score">0&ndash;2 / 5 criteria passed</div>div>
+                      <p class="demo-desc">Risk profile is unfavorable. Do not enter. Fix the fundamentals &mdash; your capital is better preserved for a better setup.</p>p>
+              </div>div>
+        </div>div>
+    </div>div>
+  </section>section>
+  
+  <!-- CTA -->
+  <section class="cta-section reveal">
+    <div class="dot-pattern"></div>div>
+    <div class="container">
+        <div class="section-label">Ready When You Are</div>div>
+        <div class="section-title">Analyze Your<br>Next Trade.</div>div>
+        <p class="cta-sub">Free. No account required. Works on any stock, ETF, or crypto.</p>p>
+        <a href="app.html" class="btn-primary">Start Analysis &rarr;</a>a>
+    </div>div>
+  </section>section>
+  
+  <!-- FOOTER -->
+  <footer>
+      <div class="container">
+            <div class="footer-logo">Entry<span>Engine</span></div>div>
+          <div class="footer-note">5-criteria risk-weighted analysis tool &nbsp;&middot;&nbsp; not financial advice</div>div>
+      </div>div>
+  </footer>
+  
+  <script>
+      const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                    if (e.isIntersecting) {
+                              e.target.classList.add('visible');
+                              observer.unobserve(e.target);
+                    }
+            });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+  </body>
+</html>html>
+  </script></span>
+  </footer></li></li>
+    </nav>
+  </body>
+    </style></title>
+  </head>
