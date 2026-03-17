@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EntryEngine - Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
+  <style>
+    :root{--bg:#ffffff;--bg-subtle:#f9f9fb;--bg-element:#f0f0f3;--text:#1c2024;--text-secondary:#60646c;--text-tertiary:#8b8d98;--border:#d9d9e0;--border-strong:#c8c9d2;--pass:#30a46c;--error:#e5484d;--dot-color:rgba(28,32,36,0.06);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 1px 1px,var(--dot-color) 1px,transparent 0);background-size:20px 20px;}
+    .card{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 4px 40px rgba(0,0,0,0.06);}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center;}
+    .logo-mark{width:24px;height:24px;background:var(--text);clip-path:polygon(50% 0%,0% 100%,25% 60%,50% 100%,75% 60%,100% 100%);flex-shrink:0;}
+    .logo-name{font-size:18px;font-weight:700;letter-spacing:-0.02em;}
+    h1{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px;text-align:center;}
+    .subtitle{font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:32px;}
+    .tabs{display:flex;background:var(--bg-element);border-radius:10px;padding:4px;gap:4px;margin-bottom:28px;}
+    .tab{flex:1;padding:9px;border:none;background:transparent;font-size:14px;font-weight:500;color:var(--text-secondary);border-radius:8px;cursor:pointer;transition:all 0.15s;font-family:inherit;}
+    .tab.active{background:var(--bg);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,0.08);}
+    .form-group{margin-bottom:16px;}
+    label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;}
+    input[type=email],input[type=password],input[type=text]{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;background:var(--bg);color:var(--text);transition:border-color 0.15s,box-shadow 0.15s;outline:none;}
+    input:focus{border-color:var(--text);box-shadow:0 0 0 3px rgba(28,32,36,0.08);}
+    .btn{width:100%;padding:13px;background:var(--text);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:opacity 0.15s;margin-top:8px;}
+    .btn:hover{opacity:0.85;}.btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text-tertiary);font-size:12px;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .btn-google{width:100%;padding:12px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:10px;font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.15s;}
+    .btn-google:hover{background:var(--bg-element);}
+    .msg{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;line-height:1.5;}
+    .msg.error{background:#fff1f1;color:var(--error);border:1px solid #ffc9c9;display:block;}
+    .msg.success{background:#e9f9ee;color:var(--pass);border:1px solid #b4e8ce;display:block;}
+    .forgot{text-align:right;margin-top:6px;}.forgot a{font-size:12px;color:var(--text-secondary);text-decoration:none;}
+    .back-link{text-align:center;margin-top:24px;}.back-link a{font-size:13px;color:var(--text-secondary);text-decoration:none;}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .panel{display:none;}.panel.active{display:block;}
+    @media(max-width:480px){.card{padding:36px 24px;margin:16px;}}
+  <\/style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><div class="logo-mark"></div><span class="logo-name">EntryEngine</span></div>
+  <h1 id="cardTitle">Welcome back</h1>
+  <p class="subtitle" id="cardSub">Sign in to your account to continue</p>
+  <div class="tabs">
+    <button class="tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+    <button class="tab" id="tabSignUp" onclick="switchTab('signup')">Sign Up</button>
+  </div>
+  <div id="msg" class="msg"></div>
+  <div class="panel active" id="panelSignIn">
+    <form onsubmit="handleSignIn(event)">
+      <div class="form-group"><label>Email</label><input type="email" id="siEmail" placeholder="you@example.com" required autocomplete="email"></div>
+      <div class="form-group">
+        <label>Password</label><input type="password" id="siPassword" placeholder="Password" required autocomplete="current-password">
+        <div class="forgot"><a href="#" onclick="handleForgot(event)">Forgot password?</a></div>
+      </div>
+      <button type="submit" class="btn" id="btnSignIn">Sign In</button>
+    </form>
+    <div class="divider">or</div>
+    <button class="btn-google" onclick="handleGoogle()">Continue with Google</button>
+  </div>
+  <div class="panel" id="panelSignUp">
+    <form onsubmit="handleSignUp(event)">
+      <div class="form-group"><label>Full Name</label><input type="text" id="suName" placeholder="Jane Smith" autocomplete="name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="suEmail" placeholder="you@example.com" required autocomplete="email"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="suPassword" placeholder="Min. 8 characters" required autocomplete="new-password" minlength="8"></div>
+      <button type="submit" class="btn" id="btnSignUp">Create Account</button>
+    </form>
+    <div class="divider">or</div>
+    <button class="btn-google" onclick="handleGoogle()">Continue with Google</button>
+  </div>
+  <div class="back-link"><a href="index.html">Back to home</a></div>
+</div>
+<script>
+  const SUPA_URL='SUPABASE_URL_PLACEHOLDER';
+  const SUPA_KEY='SUPABASE_ANON_KEY_PLACEHOLDER';
+  const{createClient}=supabase;
+  const sb=createClient(SUPA_URL,SUPA_KEY);
+  (async()=>{const{data:{session}}=await sb.auth.getSession();if(session)window.location.href='app.html';})();
+  function switchTab(tab){const si=tab==='signin';document.getElementById('panelSignIn').classList.toggle('active',si);document.getElementById('panelSignUp').classList.toggle('active',!si);document.getElementById('tabSignIn').classList.toggle('active',si);document.getElementById('tabSignUp').classList.toggle('active',!si);document.getElementById('cardTitle').textContent=si?'Welcome back':'Create your account';document.getElementById('cardSub').textContent=si?'Sign in to your account to continue':'Start analyzing trades in seconds';clearMsg();}
+  function showMsg(t,type){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+type;}
+  function clearMsg(){const e=document.getElementById('msg');e.className='msg';e.textContent='';}
+  function setLoading(id,loading,label){const b=document.getElementById(id);b.disabled=loading;b.innerHTML=loading?'<span class="spinner"><\/span>Please wait...':label;}
+  async function handleSignIn(e){e.preventDefault();clearMsg();const email=document.getElementById('siEmail').value.trim();const password=document.getElementById('siPassword').value;setLoading('btnSignIn',true,'Sign In');const{error}=await sb.auth.signInWithPassword({email,password});setLoading('btnSignIn',false,'Sign In');if(error){showMsg(error.message,'error');return;}window.location.href='app.html';}
+  async function handleSignUp(e){e.preventDefault();clearMsg();const name=document.getElementById('suName').value.trim();const email=document.getElementById('suEmail').value.trim();const password=document.getElementById('suPassword').value;setLoading('btnSignUp',true,'Create Account');const{error}=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});setLoading('btnSignUp',false,'Create Account');if(error){showMsg(error.message,'error');return;}showMsg('Account created! Check your email to confirm, then sign in.','success');}
+  async function handleGoogle(){const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/entry-engine/app.html'}});if(error)showMsg(error.message,'error');}
+  async function handleForgot(e){e.preventDefault();const email=document.getElementById('siEmail').value.trim();if(!email){showMsg('Enter your email address first.','error');return;}const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/entry-engine/app.html'});if(error){showMsg(error.message,'error');return;}showMsg('Password reset link sent - check your email.','success');}
+<\/script>
+</body>
+</html>
