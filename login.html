@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EntryEngine - Sign In</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
-    :root{--bg:#ffffff;--bg-subtle:#f9f9fb;--bg-element:#f0f0f3;--text:#1c2024;--text-secondary:#60646c;--text-tertiary:#8b8d98;--border:#d9d9e0;--border-strong:#c8c9d2;--pass:#30a46c;--error:#e5484d;--dot-color:rgba(28,32,36,0.06);}
+    :root{--bg:#ffffff;--bg-element:#f0f0f3;--text:#1c2024;--text-secondary:#60646c;--text-tertiary:#8b8d98;--border:#d9d9e0;--border-strong:#c8c9d2;--pass:#30a46c;--error:#e5484d;--dot-color:rgba(28,32,36,0.06);}
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 1px 1px,var(--dot-color) 1px,transparent 0);background-size:20px 20px;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased;background-image:radial-gradient(circle at 1px 1px,var(--dot-color) 1px,transparent 0);background-size:20px 20px;}
     .card{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 4px 40px rgba(0,0,0,0.06);}
     .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;justify-content:center;}
     .logo-mark{width:24px;height:24px;background:var(--text);clip-path:polygon(50% 0%,0% 100%,25% 60%,50% 100%,75% 60%,100% 100%);flex-shrink:0;}
@@ -38,7 +38,7 @@
     @keyframes spin{to{transform:rotate(360deg);}}
     .panel{display:none;}.panel.active{display:block;}
     @media(max-width:480px){.card{padding:36px 24px;margin:16px;}}
-  <\/style>
+  </style>
 </head>
 <body>
 <div class="card">
@@ -54,42 +54,88 @@
     <form onsubmit="handleSignIn(event)">
       <div class="form-group"><label>Email</label><input type="email" id="siEmail" placeholder="you@example.com" required autocomplete="email"></div>
       <div class="form-group">
-        <label>Password</label><input type="password" id="siPassword" placeholder="Password" required autocomplete="current-password">
+        <label>Password</label>
+        <input type="password" id="siPassword" placeholder="Password" required autocomplete="current-password">
         <div class="forgot"><a href="#" onclick="handleForgot(event)">Forgot password?</a></div>
       </div>
       <button type="submit" class="btn" id="btnSignIn">Sign In</button>
     </form>
     <div class="divider">or</div>
-    <button class="btn-google" onclick="handleGoogle()">Continue with Google</button>
+    <button class="btn-google" onclick="handleGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.013 17.64 11.706 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
   </div>
   <div class="panel" id="panelSignUp">
     <form onsubmit="handleSignUp(event)">
       <div class="form-group"><label>Full Name</label><input type="text" id="suName" placeholder="Jane Smith" autocomplete="name"></div>
       <div class="form-group"><label>Email</label><input type="email" id="suEmail" placeholder="you@example.com" required autocomplete="email"></div>
-      <div class="form-group"><label>Password</label><input type="password" id="suPassword" placeholder="Min. 8 characters" required autocomplete="new-password" minlength="8"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="suPassword" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password"></div>
       <button type="submit" class="btn" id="btnSignUp">Create Account</button>
     </form>
     <div class="divider">or</div>
-    <button class="btn-google" onclick="handleGoogle()">Continue with Google</button>
+    <button class="btn-google" onclick="handleGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.013 17.64 11.706 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
   </div>
   <div class="back-link"><a href="index.html">Back to home</a></div>
 </div>
 <script>
-  const SUPA_URL='https://dsjeuupacxayhgiinaku.supabase.co';
-  const SUPA_KEY='sb_publishable_uXO6-XMO10E9avUXUhJ-mA_n23Q13oz';
-  const{createClient}=supabase;
-  const sb=createClient(SUPA_URL,SUPA_KEY);
-  (async()=>{const{data:{session}}=await sb.auth.getSession();if(session)window.location.href='app.html';})();
-  function switchTab(tab){const si=tab==='signin';document.getElementById('panelSignIn').classList.toggle('active',si);document.getElementById('panelSignUp').classList.toggle('active',!si);document.getElementById('tabSignIn').classList.toggle('active',si);document.getElementById('tabSignUp').classList.toggle('active',!si);document.getElementById('cardTitle').textContent=si?'Welcome back':'Create your account';document.getElementById('cardSub').textContent=si?'Sign in to your account to continue':'Start analyzing trades in seconds';clearMsg();}
-  function showMsg(t,type){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+type;}
-  function clearMsg(){const e=document.getElementById('msg');e.className='msg';e.textContent='';}
-  function setLoading(id,loading,label){const b=document.getElementById(id);b.disabled=loading;b.innerHTML=loading?'<span class="spinner"><\/span>Please wait...':label;}
-  async function handleSignIn(e){e.preventDefault();clearMsg();const email=document.getElementById('siEmail').value.trim();const password=document.getElementById('siPassword').value;setLoading('btnSignIn',true,'Sign In');const{error}=await sb.auth.signInWithPassword({email,password});setLoading('btnSignIn',false,'Sign In');if(error){showMsg(error.message,'error');return;}window.location.href='app.html';}
-  async function handleSignUp(e){e.preventDefault();clearMsg();const name=document.getElementById('suName').value.trim();const email=document.getElementById('suEmail').value.trim();const password=document.getElementById('suPassword').value;setLoading('btnSignUp',true,'Create Account');const{error}=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});setLoading('btnSignUp',false,'Create Account');if(error){showMsg(error.message,'error');return;}showMsg('Account created! Check your email to confirm, then sign in.','success');}
-  async function handleGoogle(){const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/entry-engine/app.html'}});if(error)showMsg(error.message,'error');}
-  async function handleForgot(e){e.preventDefault();const email=document.getElementById('siEmail').value.trim();if(!email){showMsg('Enter your email address first.','error');return;}const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/entry-engine/app.html'});if(error){showMsg(error.message,'error');return;}showMsg('Password reset link sent - check your email.','success');}
-<\/script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  var SUPA_URL='https://dsjeuupacxayhgiinaku.supabase.co';
+  var SUPA_KEY='sb_publishable_uXO6-XMO10E9avUXUhJ-mA_n23Q13oz';
+  var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+  sb.auth.getSession().then(function(r){if(r.data.session)window.location.href='app.html';});
+  function switchTab(tab){
+    var si=tab==='signin';
+    document.getElementById('panelSignIn').classList.toggle('active',si);
+    document.getElementById('panelSignUp').classList.toggle('active',!si);
+    document.getElementById('tabSignIn').classList.toggle('active',si);
+    document.getElementById('tabSignUp').classList.toggle('active',!si);
+    document.getElementById('cardTitle').textContent=si?'Welcome back':'Create your account';
+    document.getElementById('cardSub').textContent=si?'Sign in to your account to continue':'Start analyzing trades in seconds';
+    clearMsg();
+  }
+  function showMsg(t,type){var e=document.getElementById('msg');e.textContent=t;e.className='msg '+type;}
+  function clearMsg(){var e=document.getElementById('msg');e.className='msg';e.textContent='';}
+  function setLoading(id,loading,label){var b=document.getElementById(id);b.disabled=loading;b.textContent=loading?'Please wait...':label;}
+  function handleSignIn(e){
+    e.preventDefault();clearMsg();
+    var email=document.getElementById('siEmail').value.trim();
+    var password=document.getElementById('siPassword').value;
+    setLoading('btnSignIn',true,'Sign In');
+    sb.auth.signInWithPassword({email:email,password:password}).then(function(r){
+      setLoading('btnSignIn',false,'Sign In');
+      if(r.error){showMsg(r.error.message,'error');return;}
+      window.location.href='app.html';
+    });
+  }
+  function handleSignUp(e){
+    e.preventDefault();clearMsg();
+    var name=document.getElementById('suName').value.trim();
+    var email=document.getElementById('suEmail').value.trim();
+    var password=document.getElementById('suPassword').value;
+    setLoading('btnSignUp',true,'Create Account');
+    sb.auth.signUp({email:email,password:password,options:{data:{full_name:name}}}).then(function(r){
+      setLoading('btnSignUp',false,'Create Account');
+      if(r.error){showMsg(r.error.message,'error');return;}
+      showMsg('Account created! Check your email to confirm, then sign in.','success');
+    });
+  }
+  function handleGoogle(){
+    sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/entry-engine/app.html'}}).then(function(r){
+      if(r.error)showMsg(r.error.message,'error');
+    });
+  }
+  function handleForgot(e){
+    e.preventDefault();
+    var email=document.getElementById('siEmail').value.trim();
+    if(!email){showMsg('Enter your email address first.','error');return;}
+    sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/entry-engine/app.html'}).then(function(r){
+      if(r.error){showMsg(r.error.message,'error');return;}
+      showMsg('Password reset link sent - check your email.','success');
+    });
+  }
+</script>
 </body>
 </html>
