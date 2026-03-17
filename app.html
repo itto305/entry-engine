@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EntryEngine — Trade Analysis</title>
-<link href="https://fonts.googleapis.com/css2?famihly=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?famihly=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   /* ── Dark mode (default) ── */
   :root {
@@ -949,6 +950,16 @@
     .ai-text { color: #333 !important; }
   }
 </style>
+  <script>
+    (function(){
+      var SUPA_URL='SUPABASE_URL_PLACEHOLDER';
+      var SUPA_KEY='SUPABASE_ANON_KEY_PLACEHOLDER';
+      window._sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+      window._sb.auth.getSession().then(function(r){
+        if(!r.data.session) window.location.replace('login.html');
+      });
+    })();
+  </script>
 </head>
 <body>
 <div class="container">
@@ -963,6 +974,10 @@
     <div style="display:flex;gap:8px;align-items:center;">
       <button id="themeToggle" class="icon-btn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
       <button id="settingsBtn" class="icon-btn" onclick="toggleSettings()" title="Settings">⚙</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-left:8px;">
+      <span id="userEmail" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button onclick="handleSignOut()" style="font-family:'DM Mono',monospace;font-size:11px;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;" title="Sign out">Sign out</button>
+    </div>
     </div>
   </div>
 
@@ -2073,9 +2088,27 @@ function resetAll() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─── Init ──────────────────────────────────────────────────────────
-(function init() {
-  const savedTheme = localStorage.getItem('theme');
+// ─── Auth + Init ──────────────────────────────────────────────────────────
+// ─── Sign Out ────────────────────────────────────────────────────
+    async function handleSignOut() {
+      await window._sb.auth.signOut();
+      window.location.replace('login.html');
+    }
+
+    // ─── User Display ─────────────────────────────────────────────
+    function initAuthUI() {
+      window._sb.auth.getUser().then(function(r) {
+        if (r.data && r.data.user) {
+          var email = r.data.user.email || '';
+          var el = document.getElementById('userEmail');
+          if (el) el.textContent = email;
+        }
+      });
+    }
+
+    (function init() {
+  initAuthUI();
+    const savedTheme = localStorage.getItem('theme');
   const sysDark = window.matchMedia('(prefers-color-scheme: dark)');
 
   function syncIcon() {
